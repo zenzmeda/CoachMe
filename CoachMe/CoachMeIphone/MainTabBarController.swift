@@ -11,8 +11,11 @@ class MainTabBarController: UITabBarController {
         super.viewDidLoad()
 
         let workoutsVC = WorkoutsViewController()
+        
         let statsVC = StatsViewController()
-        let profileVC = ProfileViewController()
+        
+        let profileVM = ProfileViewModel()
+        let profileVC = ProfileViewController(viewModel: profileVM)
 
         workoutsVC.title = "Тренировки"
         statsVC.title = "Статистика"

@@ -5,7 +5,7 @@
         <attribute name="exerciseName" optional="YES" attributeType="String"/>
         <attribute name="repetitions" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="sets" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="workingWeight" optional="YES" attributeType="String"/>
+        <attribute name="workingWeight" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="statsData" inverseEntity="User"/>
     </entity>
     <entity name="User" representedClassName="User" syncable="YES" codeGenerationType="class">
@@ -13,6 +13,6 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="status" optional="YES" attributeType="String"/>
-        <relationship name="statsData" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="StatsData" inverseName="user" inverseEntity="StatsData"/>
+        <relationship name="statsData" optional="YES" toMany="YES" minCount="1" maxCount="10" deletionRule="Nullify" destinationEntity="StatsData" inverseName="user" inverseEntity="StatsData"/>
     </entity>
 </model>

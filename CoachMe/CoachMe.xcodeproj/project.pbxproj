@@ -34,8 +34,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				info.plist,
-				Resources/Assets.xcassets,
-				Resources/Localizable.strings,
 			);
 			target = 887B105F2D562ADB005F20DD /* CoachMeIphone */;
 		};
