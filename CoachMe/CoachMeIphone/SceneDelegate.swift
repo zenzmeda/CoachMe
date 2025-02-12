@@ -15,9 +15,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             guard let windowScene = (scene as? UIWindowScene) else { return }
             print("HERe")
             // Создаем окно и назначаем его для текущей сцены
-            window = UIWindow(windowScene: windowScene)
-
-            window?.rootViewController = MainTabBarController()
+            let rep = RegisterRepository()
+                let registerViewModel = RegisterViewModel(repository: rep)
+                let registerVC = RegisterViewController(registerModel: registerViewModel)
+                
+                // Создаем окно
+                window = UIWindow(windowScene: windowScene)
+                window?.rootViewController = registerVC  // Устанавливаем контроллер регистрации
                 window?.makeKeyAndVisible()
 
         }

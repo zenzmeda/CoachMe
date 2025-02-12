@@ -38,7 +38,7 @@ extension User {
                   let statusString = self.status,
                   let birthday = self.birthday,
                   let email = self.email,
-                  var gym = self.gym,
+                  let gym = self.gym,
                   let phoneNumber = self.phoneNumber,
                   let userName = self.userName,
                   let status = UserModel.UserStatus(rawValue: statusString) else {
