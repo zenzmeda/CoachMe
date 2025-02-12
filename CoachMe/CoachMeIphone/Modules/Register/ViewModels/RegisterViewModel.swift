@@ -14,4 +14,7 @@ class RegisterViewModel{
     func getRepository () -> RegisterRepositoryProtocol{
         return repository
     }
+    func validateFields (userName: String?, email: String?, password: String?, confirmPassword: String?, phone: String?, birthDate: String?, gender: String, status: String, coachCode: String?) -> Bool{
+        return true
+    }
 }

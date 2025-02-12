@@ -4,12 +4,6 @@
 //
 //  Created by Vadim Timofeev on 06.02.2025.
 //
-//
-//  RegisterViewController.swift
-//  CoachMe
-//
-//  Created by Vadim Timofeev on 06.02.2025.
-//
 
 import UIKit
 
@@ -33,20 +27,32 @@ class RegisterViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     // MARK: - UI Elements
     
     private let scrollView = UIScrollView()
     private let contentView = UIView()
-
+    
     private let usernameTextField = UITextField()
     private let emailTextField = UITextField()
     private let passwordTextField = UITextField()
     private let confirmPasswordTextField = UITextField()
     private let phoneTextField = UITextField()
+    
+    // Поле для даты рождения и UIDatePicker
     private let birthDateTextField = UITextField()
+    private let birthDatePicker = UIDatePicker()
+    
+    // Для выбора пола – вместо UIPickerView используем кнопку с выпадающим меню
+    private let genderButton = UIButton()
+    private let genderOptions = ["Мужчина", "Женщина"]
+    private var selectedGender: String?
+    
+    // UIPickerView для выбора клуба
     private let clubPicker = UIPickerView()
-    private let genderSegmentControl = UISegmentedControl()
+    let clubs = ["Клуб 1", "Клуб 2", "Клуб 3"]
+    
+    // Контрол для статуса тренера (сегмент-контрол)
     private let statusSegmentControl = UISegmentedControl()
     private let coachCodeTextField = UITextField()
     private let registerButton = UIButton()
@@ -55,13 +61,12 @@ class RegisterViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white  // фон экрана
+        view.backgroundColor = .white
         
-        // Регистрируем уведомления о клавиатуре
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-        
-        setupUI()
+        setupKeyboardNotifications()
+        setupScrollViewAndContentView()
+        setupUIElements()
+        setupConstraints()
         setupDelegates()
     }
     
@@ -69,87 +74,88 @@ class RegisterViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK: - Setup UI
+    // MARK: - Setup Functions
     
-    private func setupUI() {
-        // Настройка ScrollView и ContentView
+    private func setupKeyboardNotifications() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillShow(_:)),
+                                               name: UIResponder.keyboardWillShowNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillHide(_:)),
+                                               name: UIResponder.keyboardWillHideNotification,
+                                               object: nil)
+    }
+    
+    private func setupScrollViewAndContentView() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.keyboardDismissMode = .onDrag
-        scrollView.backgroundColor = .lightGray.withAlphaComponent(0.1)  // для отладки можно убрать
+        scrollView.backgroundColor = UIColor.lightGray.withAlphaComponent(0.1)
         
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .white
         
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
+    }
+    
+    private func setupUIElements() {
+        // Настройка текстовых полей
+        setupTextField(usernameTextField, placeholder: "Username")
+        setupTextField(emailTextField, placeholder: "Email")
+        setupTextField(passwordTextField, placeholder: "Password", isSecure: true)
+        setupTextField(confirmPasswordTextField, placeholder: "Confirm Password", isSecure: true)
+        setupTextField(phoneTextField, placeholder: "Phone", keyboardType: .phonePad)
         
-        // Ограничения для scrollView относительно view
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
+        // Настройка поля и UIDatePicker для даты рождения
+        setupBirthDateField()
         
-        // Ограничения для contentView относительно scrollView
-        NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)  // фиксированная ширина
-        ])
-        
-        // Настройка полей ввода
-        
-        usernameTextField.placeholder = "Username"
-        usernameTextField.borderStyle = .roundedRect
-        usernameTextField.translatesAutoresizingMaskIntoConstraints = false
-        
-        emailTextField.placeholder = "Email"
-        emailTextField.borderStyle = .roundedRect
-        emailTextField.translatesAutoresizingMaskIntoConstraints = false
-        
-        passwordTextField.placeholder = "Password"
-        passwordTextField.isSecureTextEntry = true
-        passwordTextField.borderStyle = .roundedRect
-        passwordTextField.translatesAutoresizingMaskIntoConstraints = false
-        
-        confirmPasswordTextField.placeholder = "Confirm Password"
-        confirmPasswordTextField.isSecureTextEntry = true
-        confirmPasswordTextField.borderStyle = .roundedRect
-        confirmPasswordTextField.translatesAutoresizingMaskIntoConstraints = false
-        
-        phoneTextField.placeholder = "Phone"
-        phoneTextField.keyboardType = .phonePad
-        phoneTextField.borderStyle = .roundedRect
-        phoneTextField.translatesAutoresizingMaskIntoConstraints = false
-        
-        birthDateTextField.placeholder = "Birth Date (DD/MM/YYYY)"
-        birthDateTextField.borderStyle = .roundedRect
-        birthDateTextField.translatesAutoresizingMaskIntoConstraints = false
-        
+        // Настройка UIPickerView для выбора клуба
         clubPicker.translatesAutoresizingMaskIntoConstraints = false
         
-        // Настройка сегмент контролов
+        // Настройка кнопки для выбора пола (выпадающий список)
+        genderButton.translatesAutoresizingMaskIntoConstraints = false
+        genderButton.setTitle("Select Gender", for: .normal)
+        genderButton.setTitleColor(UIColor.gray.withAlphaComponent(0.5), for: .normal)
+        genderButton.contentHorizontalAlignment = .left
+        // Добавляем отступы для текста, чтобы он не прилегал вплотную к краю
+        genderButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
+
+        // Стилизация границы как у текстовых полей
+        genderButton.layer.cornerRadius = 5
+        genderButton.layer.borderWidth = 1
+        genderButton.layer.borderColor = UIColor.lightGray.cgColor
+        // Задаем белый фон, как у текстовых полей
+        genderButton.backgroundColor = .white
+        // Устанавливаем заголовок по умолчанию
+        genderButton.setTitle("Select Gender", for: .normal)
+        genderButton.setTitleColor(UIColor.gray.withAlphaComponent(0.5), for: .normal)
         
-        genderSegmentControl.insertSegment(withTitle: "Male", at: 0, animated: false)
-        genderSegmentControl.insertSegment(withTitle: "Female", at: 1, animated: false)
-        genderSegmentControl.selectedSegmentIndex = 0
-        genderSegmentControl.translatesAutoresizingMaskIntoConstraints = false
+        // Создаем UIMenu с вариантами выбора пола (требуется iOS 14+)
+        var genderActions: [UIAction] = []
+        for option in genderOptions {
+            let action = UIAction(title: option, handler: { [weak self] _ in
+                self?.selectedGender = option
+                self?.genderButton.setTitle(option, for: .normal)
+            })
+            genderActions.append(action)
+        }
+        genderButton.menu = UIMenu(title: "", children: genderActions)
+        genderButton.showsMenuAsPrimaryAction = true
+        // По умолчанию сохраняем первый вариант, если нужно
+        selectedGender = genderOptions[0]
         
+        // Настройка сегмент-контрола для выбора статуса тренера
         statusSegmentControl.insertSegment(withTitle: "Trainer", at: 0, animated: false)
         statusSegmentControl.insertSegment(withTitle: "Not a Trainer", at: 1, animated: false)
         statusSegmentControl.selectedSegmentIndex = 1
         statusSegmentControl.translatesAutoresizingMaskIntoConstraints = false
         
-        // Поле для кода тренера (скрыто по умолчанию)
-        coachCodeTextField.placeholder = "Trainer Code"
-        coachCodeTextField.borderStyle = .roundedRect
-        coachCodeTextField.translatesAutoresizingMaskIntoConstraints = false
+        // Настройка поля для кода тренера
+        setupTextField(coachCodeTextField, placeholder: "Trainer Code")
         coachCodeTextField.isHidden = true
         
-        // Кнопка регистрации
+        // Настройка кнопки регистрации
         registerButton.setTitle("Register", for: .normal)
         registerButton.setTitleColor(.white, for: .normal)
         registerButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
@@ -164,10 +170,54 @@ class RegisterViewController: UIViewController {
         registerButton.addTarget(self, action: #selector(registerButtonTapped), for: .touchUpInside)
         
         // Добавляем все элементы в contentView
-        let views: [UIView] = [usernameTextField, emailTextField, passwordTextField, confirmPasswordTextField, phoneTextField, birthDateTextField, clubPicker, genderSegmentControl, statusSegmentControl, coachCodeTextField, registerButton]
-        views.forEach { contentView.addSubview($0) }
+        let elements: [UIView] = [usernameTextField, emailTextField, passwordTextField, confirmPasswordTextField, phoneTextField, birthDateTextField, clubPicker, genderButton, statusSegmentControl, coachCodeTextField, registerButton]
+        elements.forEach { contentView.addSubview($0) }
         
-        // AutoLayout для всех элементов (отступы по 15 пунктов между полями)
+        // Добавляем обработчик для изменения статуса тренера
+        statusSegmentControl.addTarget(self, action: #selector(statusChanged), for: .valueChanged)
+    }
+    
+    private func setupTextField(_ textField: UITextField, placeholder: String, isSecure: Bool = false, keyboardType: UIKeyboardType = .default) {
+        textField.placeholder = placeholder
+        textField.borderStyle = .roundedRect
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.isSecureTextEntry = isSecure
+        textField.keyboardType = keyboardType
+    }
+    
+    private func setupBirthDateField() {
+        // Настройка текстового поля для даты рождения
+        birthDateTextField.placeholder = "Birth Date"
+        birthDateTextField.borderStyle = .roundedRect
+        birthDateTextField.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Настройка UIDatePicker
+        birthDatePicker.datePickerMode = .date
+        birthDatePicker.preferredDatePickerStyle = .wheels
+        birthDatePicker.addTarget(self, action: #selector(datePickerChanged(_:)), for: .valueChanged)
+        
+        // Используем UIDatePicker как inputView для текстового поля
+        birthDateTextField.inputView = birthDatePicker
+        // Добавляем тулбар с кнопкой "Готово"
+        birthDateTextField.inputAccessoryView = createToolbar()
+    }
+    
+    private func setupConstraints() {
+        // Ограничения для scrollView и contentView
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+        ])
+        
+        // Ограничения для элементов внутри contentView
         NSLayoutConstraint.activate([
             usernameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             usernameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
@@ -199,16 +249,18 @@ class RegisterViewController: UIViewController {
             birthDateTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             birthDateTextField.heightAnchor.constraint(equalToConstant: 44),
             
-            clubPicker.topAnchor.constraint(equalTo: birthDateTextField.bottomAnchor, constant: 15),
+            clubPicker.topAnchor.constraint(equalTo: coachCodeTextField.bottomAnchor, constant: -10),
             clubPicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             clubPicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             clubPicker.heightAnchor.constraint(equalToConstant: 100),
             
-            genderSegmentControl.topAnchor.constraint(equalTo: clubPicker.bottomAnchor, constant: 15),
-            genderSegmentControl.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            genderSegmentControl.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            // Размещаем кнопку для выбора пола (вместо UIPickerView)
+            genderButton.topAnchor.constraint(equalTo: birthDateTextField.bottomAnchor, constant: 15),
+            genderButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            genderButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            genderButton.heightAnchor.constraint(equalToConstant: 44),
             
-            statusSegmentControl.topAnchor.constraint(equalTo: genderSegmentControl.bottomAnchor, constant: 15),
+            statusSegmentControl.topAnchor.constraint(equalTo: genderButton.bottomAnchor, constant: 15),
             statusSegmentControl.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             statusSegmentControl.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             
@@ -217,25 +269,47 @@ class RegisterViewController: UIViewController {
             coachCodeTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             coachCodeTextField.heightAnchor.constraint(equalToConstant: 44),
             
-            registerButton.topAnchor.constraint(equalTo: coachCodeTextField.bottomAnchor, constant: 30),
+            registerButton.topAnchor.constraint(equalTo: clubPicker.bottomAnchor, constant: 10),
             registerButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             registerButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             registerButton.heightAnchor.constraint(equalToConstant: 44),
-            registerButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)  // чтобы задать общую высоту контента
+            registerButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
-        
-        // Обработчик изменения статуса тренера
-        statusSegmentControl.addTarget(self, action: #selector(statusChanged), for: .valueChanged)
     }
     
     private func setupDelegates() {
-        // Если требуется обработка return и прочее
         usernameTextField.delegate = self
         emailTextField.delegate = self
         passwordTextField.delegate = self
         confirmPasswordTextField.delegate = self
         phoneTextField.delegate = self
-        birthDateTextField.delegate = self
+        
+        clubPicker.dataSource = self
+        clubPicker.delegate = self
+    }
+    
+    // MARK: - Toolbar and DatePicker Actions
+    
+    private func createToolbar() -> UIToolbar {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done,
+                                         target: self,
+                                         action: #selector(doneButtonTapped))
+        toolbar.setItems([doneButton], animated: false)
+        return toolbar
+    }
+    
+    @objc private func doneButtonTapped() {
+        view.endEditing(true)
+    }
+    
+    @objc private func datePickerChanged(_ sender: UIDatePicker) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .short
+        dateFormatter.timeStyle = .none
+        let selectedDate = dateFormatter.string(from: sender.date)
+        birthDateTextField.text = selectedDate
     }
     
     // MARK: - Keyboard Notifications
@@ -256,7 +330,7 @@ class RegisterViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func statusChanged() {
-        // Если выбран статус "Trainer" (индекс 0), показываем поле для кода; иначе скрываем.
+        // Если выбран статус "Trainer" (индекс 0), показываем поле для кода тренера, иначе скрываем.
         coachCodeTextField.isHidden = statusSegmentControl.selectedSegmentIndex == 1
     }
     
@@ -267,16 +341,14 @@ class RegisterViewController: UIViewController {
         let confirmPassword = confirmPasswordTextField.text
         let phone = phoneTextField.text
         let birthDate = birthDateTextField.text
-        let gender = genderSegmentControl.selectedSegmentIndex == 0 ? "Male" : "Female"
+        let gender = selectedGender ?? ""
         let status = statusSegmentControl.selectedSegmentIndex == 0 ? "Trainer" : "Not a Trainer"
         let coachCode = coachCodeTextField.text
         
-        // Простейшая проверка на заполненность полей и совпадение паролей
         if let username = username, let email = email, let password = password, let confirmPassword = confirmPassword,
            !username.isEmpty, !email.isEmpty, !password.isEmpty, !confirmPassword.isEmpty {
             if password == confirmPassword {
-                // Здесь можно добавить логику регистрации, например, отправку данных на сервер
-                print("Регистрация успешна")
+            
             } else {
                 showAlert(message: "Пароли не совпадают!")
             }
@@ -298,5 +370,28 @@ extension RegisterViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
+    }
+}
+
+// MARK: - UIPickerViewDataSource & UIPickerViewDelegate
+
+extension RegisterViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1  // Один столбец
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        if pickerView == clubPicker {
+            return clubs.count
+        }
+        return 0
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        if pickerView == clubPicker {
+            return clubs[row]
+        }
+        return nil
     }
 }
