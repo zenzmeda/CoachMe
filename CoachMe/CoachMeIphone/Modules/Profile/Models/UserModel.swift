@@ -13,13 +13,36 @@ class UserModel{
     var avatar: String
     var progress: [Stats]
     var status: UserStatus
+    var email: String
+    var userName: String
+    var phoneNumber: String
+    var gender: Gender
+    var birthday: Date
+    var gym: GYM
     
-    init(id: UUID, name: String, avatar: String, progress: [Stats], status: UserStatus) {
+    init(id: UUID, name: String, avatar: String, progress: [Stats], status: UserStatus, email: String, userName: String, phoneNumber: String, gender: Gender, birthday: Date, gym: GYM) {
         self.id = id
         self.name = name
         self.avatar = avatar
         self.progress = progress
         self.status = status
+        self.email = email
+        self.userName = userName
+        self.phoneNumber = phoneNumber
+        self.gender = gender
+        self.birthday = birthday
+        self.gym = gym
+    }
+    
+    enum GYM: String {
+        case Tulskaya = "Tulskaya"
+        case Shabolovka = "Shabolovka"
+        case KrasnyiProspect = "KrasnyiProspect"
+    }
+    
+    enum Gender {
+        case male
+        case female
     }
     
     enum UserStatus: String {

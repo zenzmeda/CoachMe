@@ -10,19 +10,26 @@ import Foundation
 
 class StatsViewModel {
     
-    private var stats: [Stats]
+    private let repository: StatsRepositoryProtocol
     
-    init(stats: [Stats]) {
-        self.stats = stats
+    init(repository: StatsRepositoryProtocol) {
+        self.repository = repository
     }
+    
+    private func getData() -> [Stats]{
+        return repository.fetchStats()
+    }
+    
+    func saveStat(_ stat: Stats) {
+            repository.saveStats(stat)
+        }
     
     // Метод для загрузки статистики
     func loadStatsData() {
-        // Пример статичных данных (в реальной ситуации тут будет запрос к API или к локальной базе данных)
-        stats = [
-            Stats(exerciseName: "Squat",workingWeight: 100, repetitions: 12, sets: 3, date: Date()),
-            Stats(exerciseName: "Deadlift", workingWeight: 120, repetitions: 10, sets: 3,date: Date()),
-            Stats(exerciseName: "Bench Press",workingWeight: 80, repetitions: 8, sets: 3, date: Date())
-        ]
+       
+    }
+    
+    func getRepository () -> StatsRepositoryProtocol{
+        return repository
     }
 }

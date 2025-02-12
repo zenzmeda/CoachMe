@@ -9,12 +9,17 @@ import UIKit
 class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        let workoutsVC = WorkoutsViewController()
         
-        let statsVC = StatsViewController()
+        let workoutR = WorkoutsRepository()
+        let workoutsVM = WorkoutsViewModel(repository: workoutR)
+        let workoutsVC = WorkoutsViewController(viewModel: workoutsVM)
         
-        let profileVM = ProfileViewModel()
+        let statsR = StatsRepository()
+        let statsVM = StatsViewModel(repository: statsR)
+        let statsVC = StatsViewController(viewModel: statsVM)
+        
+        let profileR = UserRepository()
+        let profileVM = ProfileViewModel(repository: profileR)
         let profileVC = ProfileViewController(viewModel: profileVM)
 
         workoutsVC.title = "Тренировки"

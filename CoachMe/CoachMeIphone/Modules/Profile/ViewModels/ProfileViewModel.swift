@@ -8,20 +8,32 @@
 import Foundation
 
 class ProfileViewModel {
-    private var user: UserModel?
+    private let repository: UserReposytoryProtocol
+    
+    init(repository: UserReposytoryProtocol) {
+        self.repository = repository
+    }
+    
+    func getUserData() -> UserModel? {
+            return repository.fetchUser()
+        }
+    
+    func getRepository() -> UserReposytoryProtocol {
+           return repository
+       }
 
     func fetchUser() {
         // Симуляция получения данных из базы или сетевого запроса
         // Для примера создадим пользователя вручную
-        let myprogress: [Stats] = []
-        user = UserModel(id: UUID(), name: "Vadim", avatar: "Empty", progress: myprogress, status: UserModel.UserStatus.inGym)
+//        let myprogress: [Stats] = []
+//        let _ = UserModel(id: UUID(), name: "Vadim", avatar: "Empty", progress: myprogress, status: UserModel.UserStatus.inGym)
     }
 
     func getUserName() -> String {
-        return user?.name ?? "Unknown"
+        return getUserData()?.name ?? "Unknown"
     }
 
     func getUserAvatar() -> String {
-        return user?.avatar ?? "default_avatar"
+        return getUserData()?.avatar ?? "default_avatar"
     }
 }
