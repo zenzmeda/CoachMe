@@ -6,9 +6,14 @@
 //
 
 import UIKit
+import Combine
 
 #Preview {
-    let rep = RegisterRepository()
+    let trainer: [TrainerModel] = []
+    let users: [UserModel] = []
+    let apiService = MockAPIService(users: users, trainer: trainer)
+    let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
+    let rep = RegisterRepository(apiService: apiService, dataService: dataService)
     let viewController = RegisterViewModel(repository: rep)
     let controller = RegisterViewController(registerModel: viewController)
     let navigationController = UINavigationController(rootViewController: controller)
@@ -18,6 +23,8 @@ import UIKit
 class RegisterViewController: UIViewController {
     
     private let registerModel: RegisterViewModel
+    
+    private var cancellables: Set<AnyCancellable> = []
     
     init(registerModel: RegisterViewModel) {
         self.registerModel = registerModel
@@ -38,6 +45,8 @@ class RegisterViewController: UIViewController {
     private let passwordTextField = UITextField()
     private let confirmPasswordTextField = UITextField()
     private let phoneTextField = UITextField()
+    private let nameTextField = UITextField()
+    
     
     // Поле для даты рождения и UIDatePicker
     private let birthDateTextField = UITextField()
@@ -106,6 +115,7 @@ class RegisterViewController: UIViewController {
         setupTextField(passwordTextField, placeholder: "Password", isSecure: true)
         setupTextField(confirmPasswordTextField, placeholder: "Confirm Password", isSecure: true)
         setupTextField(phoneTextField, placeholder: "Phone", keyboardType: .phonePad)
+        setupTextField(nameTextField, placeholder: "Name")
         
         // Настройка поля и UIDatePicker для даты рождения
         setupBirthDateField()
@@ -120,7 +130,7 @@ class RegisterViewController: UIViewController {
         genderButton.contentHorizontalAlignment = .left
         // Добавляем отступы для текста, чтобы он не прилегал вплотную к краю
         genderButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
-
+        
         // Стилизация границы как у текстовых полей
         genderButton.layer.cornerRadius = 5
         genderButton.layer.borderWidth = 1
@@ -131,7 +141,7 @@ class RegisterViewController: UIViewController {
         genderButton.setTitle("Select Gender", for: .normal)
         genderButton.setTitleColor(UIColor.gray.withAlphaComponent(0.5), for: .normal)
         
-        // Создаем UIMenu с вариантами выбора пола (требуется iOS 14+)
+        //UIMenu с вариантами выбора пола (требуется iOS 14+)
         var genderActions: [UIAction] = []
         for option in genderOptions {
             let action = UIAction(title: option, handler: { [weak self] _ in
@@ -170,7 +180,7 @@ class RegisterViewController: UIViewController {
         registerButton.addTarget(self, action: #selector(registerButtonTapped), for: .touchUpInside)
         
         // Добавляем все элементы в contentView
-        let elements: [UIView] = [usernameTextField, emailTextField, passwordTextField, confirmPasswordTextField, phoneTextField, birthDateTextField, clubPicker, genderButton, statusSegmentControl, coachCodeTextField, registerButton]
+        let elements: [UIView] = [nameTextField, usernameTextField, emailTextField, passwordTextField, confirmPasswordTextField, phoneTextField, birthDateTextField, clubPicker, genderButton, statusSegmentControl, coachCodeTextField, registerButton]
         elements.forEach { contentView.addSubview($0) }
         
         // Добавляем обработчик для изменения статуса тренера
@@ -219,6 +229,10 @@ class RegisterViewController: UIViewController {
         
         // Ограничения для элементов внутри contentView
         NSLayoutConstraint.activate([
+            nameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            nameTextField.heightAnchor.constraint(equalToConstant: 44),
             usernameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             usernameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             usernameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
@@ -335,26 +349,55 @@ class RegisterViewController: UIViewController {
     }
     
     @objc private func registerButtonTapped() {
-        let username = usernameTextField.text
-        let email = emailTextField.text
-        let password = passwordTextField.text
-        let confirmPassword = confirmPasswordTextField.text
-        let phone = phoneTextField.text
-        let birthDate = birthDateTextField.text
-        let gender = selectedGender ?? ""
-        let status = statusSegmentControl.selectedSegmentIndex == 0 ? "Trainer" : "Not a Trainer"
-        let coachCode = coachCodeTextField.text
+        let selectedClubIndex = clubPicker.selectedRow(inComponent: 0)
+        let selectedClub = clubs[selectedClubIndex]
+        let currentStatusPublisher = registerModel.validateFields(
+            name: nameTextField.text,
+            userName: usernameTextField.text,
+            email: emailTextField.text,
+            password: passwordTextField.text,
+            confirmPassword: confirmPasswordTextField.text,
+            phone: phoneTextField.text,
+            birthDate: birthDateTextField.text,
+            gender: selectedGender ?? "",
+            status: statusSegmentControl.selectedSegmentIndex == 0 ? RegisterViewModel.StatusUserTrainer.trainer.rawValue : RegisterViewModel.StatusUserTrainer.notATrainer.rawValue,
+            coachCode: coachCodeTextField.text,
+            gym: selectedClub
+        )
         
-        if let username = username, let email = email, let password = password, let confirmPassword = confirmPassword,
-           !username.isEmpty, !email.isEmpty, !password.isEmpty, !confirmPassword.isEmpty {
-            if password == confirmPassword {
-            
-            } else {
-                showAlert(message: "Пароли не совпадают!")
-            }
-        } else {
-            showAlert(message: "Заполните все поля!")
-        }
+        // Подписка на результат
+        currentStatusPublisher
+            .sink(receiveValue: { status in
+                switch status {
+                case .userExist:
+                    self.showAlert(message: "Пользователь уже существует")
+                case .emptyFields:
+                    self.showAlert(message: "Заполните все поля")
+                    self.highlightEmptyFields()
+                case .errorCreate:
+                    self.showAlert(message: "Не удалось создать пользователя. Попробуйте позже.")
+                case .userCreate:
+                    self.showAlert(message: "Регистрация успешна")
+                    self.navigateToTabBar()
+                case .incorrectCoachCode:
+                    self.showAlert(message: "Неправильный код тренера")
+                case .errorRegisterTrainer:
+                    self.showAlert(message: "Ошибка регистрации тренера")
+                case .absentCoachCode:
+                    self.showAlert(message: "Не указан код тренера")
+                case .ErrorFormatBirthDate:
+                    self.showAlert(message: "Неправильный формат даты рождения")
+                case .IncorrectEmail:
+                    self.showAlert(message: "Некорректный email")
+                case .passwordMismatch:
+                    self.showAlert(message: "Пароли не совпадают")
+                case .IncorrectPhoneNumber:
+                    self.showAlert(message: "Некорректный номер телефона")
+                case .errorCreateGYM:
+                    self.showAlert(message: "Ошибка создания клуба")
+                }
+            })
+            .store(in: &cancellables)  // Сохраняем подписку для управления жизненным циклом
     }
     
     private func showAlert(message: String) {
@@ -362,7 +405,36 @@ class RegisterViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
+    
+    private func highlightEmptyFields() {
+        let fields: [(UITextField, String?)] = [
+            (nameTextField, nameTextField.text),
+            (usernameTextField, usernameTextField.text),
+            (emailTextField, emailTextField.text),
+            (passwordTextField, passwordTextField.text),
+            (confirmPasswordTextField, confirmPasswordTextField.text),
+            (phoneTextField, phoneTextField.text),
+            (birthDateTextField, birthDateTextField.text)
+        ]
+        
+        for (field, text) in fields {
+            if text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true {
+                field.layer.borderColor = UIColor.red.cgColor
+                field.layer.borderWidth = 1.0
+            } else {
+                field.layer.borderColor = UIColor.clear.cgColor
+                field.layer.borderWidth = 0.0
+            }
+        }
+    }
+    
+    func navigateToTabBar() {
+        // Переход к MainTabBarController
+        let mainTabBarController = MainTabBarController()
+        self.navigationController?.setViewControllers([mainTabBarController], animated: true)
+    }
 }
+
 
 // MARK: - UITextFieldDelegate
 

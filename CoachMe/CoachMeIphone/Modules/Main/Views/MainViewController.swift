@@ -6,9 +6,15 @@
 //
 
 import UIKit
+import CoreData
 
 #Preview {
-    let rep = RegisterRepository()
+    let users: [UserModel] = []
+    let trainer: [TrainerModel] = []
+    let context = UserLocalDataSource.createTestContext()
+    let dataService = UserLocalDataSource(context: context)
+    let api = MockAPIService(users: users, trainer: trainer)
+    let rep = RegisterRepository(apiService: api, dataService: dataService)
     let viewcontroller = RegisterViewModel(repository: rep)
     let logVM = LoginViewModel(repository: rep)
     let controller = MainViewController(registerViewModel: viewcontroller, loginViewModel: logVM)

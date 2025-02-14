@@ -15,7 +15,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             guard let windowScene = (scene as? UIWindowScene) else { return }
             print("HERe")
             // Создаем окно и назначаем его для текущей сцены
-            let rep = RegisterRepository()
+            let users: [UserModel] = []
+            let trainer: [TrainerModel] = []
+            let apiService = MockAPIService(users: users, trainer: trainer)
+            let dataService = UserLocalDataSource(context: PersistenceManager.shared.context)
+            let rep = RegisterRepository(apiService: apiService, dataService: dataService)
                 let registerViewModel = RegisterViewModel(repository: rep)
                 let registerVC = RegisterViewController(registerModel: registerViewModel)
                 

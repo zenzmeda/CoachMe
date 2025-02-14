@@ -9,7 +9,7 @@ import Foundation
 
 class DummyUserRepository: UserReposytoryProtocol {
     func fetchUser() -> UserModel {
-        return UserModel(id: UUID(), name: "Vadim", avatar: "default_avatar", progress: [], status: .outGym,email: "dafult", userName: "default", phoneNumber: "default", gender: UserModel.Gender.male, birthday: Date(), gym: UserModel.GYM.KrasnyiProspect)
+        return UserModel(id: UUID(), name: "Vadim", avatar: "default_avatar", progress: [], status: .outGym,email: "dafult", userName: "default", phoneNumber: "default", gender: UserModel.Gender.male, birthday: Date(), gym: UserModel.GYM.KrasnyiProspect, statusTrainer: 0)
     }
     
     func updateUser(_ user: UserModel) {

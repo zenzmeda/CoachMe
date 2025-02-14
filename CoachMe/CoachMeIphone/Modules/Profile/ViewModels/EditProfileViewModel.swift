@@ -25,7 +25,7 @@ class EditProfileViewModel {
 
     func saveChanges(newName: String, newAvatar: String) {
         let _: [Stats] = []
-        let user = UserModel(id: UUID(), name: "Vadim", avatar: "default_avatar", progress: [], status: .outGym,email: "dafult", userName: "default", phoneNumber: "default", gender: UserModel.Gender.male, birthday: Date(), gym: UserModel.GYM.KrasnyiProspect)
+        let user = UserModel(id: UUID(), name: "Vadim", avatar: "default_avatar", progress: [], status: .outGym,email: "dafult", userName: "default", phoneNumber: "default", gender: UserModel.Gender.male, birthday: Date(), gym: UserModel.GYM.KrasnyiProspect,statusTrainer: 0)
         reposytory.updateUser(user)
     }
 }

@@ -22,11 +22,31 @@ extension UserModel {
         user.gym = self.gym.rawValue
         user.phoneNumber = self.phoneNumber
         user.userName = self.userName
-        
+        user.statusTrainer = self.statusTrainer
         let progressSet = self.progress.map{$0.statsToCoreData(context: context)}
         user.statsData = NSSet(array: progressSet)
         return user
         
+    }
+}
+
+extension TrainerModel{
+    
+    func toCoreDataModel(context: NSManagedObjectContext) -> Trainer{
+        let trainer = Trainer(context: context)
+        trainer.id = self.id
+        trainer.coachCode = self.coachCode
+        return trainer
+    }
+}
+
+extension Trainer{
+    func toTrainerModel()->TrainerModel?{
+        guard let id = self.id,
+              let coachCode = self.coachCode else{
+            return nil
+        }
+        return TrainerModel(id: id, coachCode: coachCode)
     }
 }
 
@@ -54,7 +74,7 @@ extension User {
                 currentGYM = DefaultGYM
             }
          
-            return UserModel(id: id, name: name, avatar: avatar, progress: stats, status: status, email: email, userName: userName, phoneNumber: phoneNumber, gender: self.gender == 1 ? UserModel.Gender.male : UserModel.Gender.female, birthday: birthday, gym: currentGYM)
+            return UserModel(id: id, name: name, avatar: avatar, progress: stats, status: status, email: email, userName: userName, phoneNumber: phoneNumber, gender: self.gender == 1 ? UserModel.Gender.male : UserModel.Gender.female, birthday: birthday, gym: currentGYM, statusTrainer: self.statusTrainer)
         }
 }
 

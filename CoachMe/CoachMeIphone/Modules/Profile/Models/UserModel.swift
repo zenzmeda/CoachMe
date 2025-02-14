@@ -19,8 +19,9 @@ class UserModel{
     var gender: Gender
     var birthday: Date
     var gym: GYM
+    var statusTrainer: Int16
     
-    init(id: UUID, name: String, avatar: String, progress: [Stats], status: UserStatus, email: String, userName: String, phoneNumber: String, gender: Gender, birthday: Date, gym: GYM) {
+    init(id: UUID, name: String, avatar: String, progress: [Stats], status: UserStatus, email: String, userName: String, phoneNumber: String, gender: Gender, birthday: Date, gym: GYM, statusTrainer: Int16) {
         self.id = id
         self.name = name
         self.avatar = avatar
@@ -32,6 +33,7 @@ class UserModel{
         self.gender = gender
         self.birthday = birthday
         self.gym = gym
+        self.statusTrainer = statusTrainer
     }
     
     enum GYM: String {

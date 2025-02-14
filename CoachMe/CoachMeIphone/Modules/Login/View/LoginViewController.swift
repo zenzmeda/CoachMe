@@ -8,7 +8,11 @@
 import UIKit
 
 #Preview {
-    let rep = RegisterRepository()
+    let users: [UserModel] = []
+    let trainer: [TrainerModel] = []
+    let apservice = MockAPIService(users: users, trainer: trainer)
+    let dataservice = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
+    let rep = RegisterRepository(apiService: apservice, dataService: dataservice)
     let viewcontroller = LoginViewModel(repository: rep)
     let controller = LoginViewController(loginModel: viewcontroller)
     let navigationController = UINavigationController(rootViewController: controller)
