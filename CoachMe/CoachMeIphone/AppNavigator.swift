@@ -25,15 +25,19 @@ class AppNavigator{
         
         // Переход на экран регистрации
         func goToRegistration() {
+            print("Goreg вызван в AppNavigate")
             let registerVM = RegisterViewModel(repository: registerRepository)
-            let registrationViewController = RegisterViewController(registerModel: registerVM)
+            let registrationViewController = RegisterViewController(registerModel: registerVM,appNavigator: self)
+            print("appNavigator in goToRegistration: \(String(describing: self))")
             navigationController.pushViewController(registrationViewController, animated: true)
         }
         
         // Переход на экран логина
         func goToLogin() {
+            print("goToLogin() вызван в AppNavigator")
             let loginVM = LoginViewModel(repository: registerRepository)
             let loginViewController = LoginViewController(loginModel: loginVM)
+            print("navigationController: \(navigationController)")
             navigationController.pushViewController(loginViewController, animated: true)
         }
         

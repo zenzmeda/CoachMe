@@ -13,11 +13,18 @@ import Combine
     let users: [UserModel] = []
     let apiService = MockAPIService(users: users, trainer: trainer)
     let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
+    
     let rep = RegisterRepository(apiService: apiService, dataService: dataService)
+    let statR = StatsRepository()
+    let userR = UserRepository()
+    let workoutsR = WorkoutsRepository()
+    
     let viewController = RegisterViewModel(repository: rep)
     let controller = RegisterViewController(registerModel: viewController)
     let navigationController = UINavigationController(rootViewController: controller)
+    let appnavigator = AppNavigator(navigationController: navigationController, registerRepository: rep, statsRepository: statR, userReposytory: userR, workoutsRepository: workoutsR)
     return navigationController
+    
 }
 
 class RegisterViewController: UIViewController {
@@ -26,8 +33,11 @@ class RegisterViewController: UIViewController {
     
     private var cancellables: Set<AnyCancellable> = []
     
-    init(registerModel: RegisterViewModel) {
+    var appNavigator: AppNavigator?
+    
+    init(registerModel: RegisterViewModel, appNavigator: AppNavigator? = nil) {
         self.registerModel = registerModel
+        self.appNavigator = appNavigator
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -364,10 +374,11 @@ class RegisterViewController: UIViewController {
             coachCode: coachCodeTextField.text,
             gym: selectedClub
         )
-        
+
         // Подписка на результат
         currentStatusPublisher
-            .sink(receiveValue: { status in
+            .sink(receiveValue: { [weak self] status in
+                guard let self = self else { return }
                 switch status {
                 case .userExist:
                     self.showAlert(title: "Ошибка", message: "Пользователь уже существует")
@@ -377,8 +388,9 @@ class RegisterViewController: UIViewController {
                 case .errorCreate:
                     self.showAlert(title: "Ошибка", message: "Не удалось создать пользователя. Попробуйте позже.")
                 case .userCreate:
-                    self.showAlert(title: "Успех", message: "Регистрация успешна")
-                    self.navigateToTabBar()
+                    self.showAlert(title: "Успех", message: "Регистрация успешна") { [weak self] in
+                        self?.goToLogin()
+                    }
                 case .incorrectCoachCode:
                     self.showAlert(title: "Ошибка", message: "Неправильный код тренера")
                 case .errorRegisterTrainer:
@@ -398,13 +410,17 @@ class RegisterViewController: UIViewController {
                 }
             })
             .store(in: &cancellables)  // Сохраняем подписку для управления жизненным циклом
-        }
+    }
 
-        private func showAlert(title: String, message: String) {
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
+    // Теперь showAlert принимает completion для обработки нажатия "OK"
+    private func showAlert(title: String, message: String, completion: (() -> Void)? = nil) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            completion?()
         }
+        alert.addAction(okAction)
+        present(alert, animated: true)
+    }
     
     private func highlightEmptyFields() {
         let fields: [(UITextField, String?)] = [
@@ -429,8 +445,9 @@ class RegisterViewController: UIViewController {
     }
     
     func goToLogin() {
-        let loginViewController = LoginViewController(loginModel: <#T##LoginViewModel#>)
-            self.navigationController?.pushViewController(loginViewController, animated: true)
+        print("appNavigate перед вызовом: \(String(describing: appNavigator))")
+        print("Go to LoGIN from Registration")
+        appNavigator?.goToLogin()
         }
 }
 

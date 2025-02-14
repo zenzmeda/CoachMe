@@ -31,12 +31,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let workoutsRepository = WorkoutsRepository()
         
         let registerVM = RegisterViewModel(repository: registerRepository)
+        
         let loginVM = LoginViewModel(repository: registerRepository)
         let mainViewController = MainViewController(registerViewModel: registerVM, loginViewModel: loginVM)
         let navigationController = UINavigationController(rootViewController: mainViewController)
         
         // Инициализируем AppNavigator и передаем в него окно
         appNavigator = AppNavigator(navigationController: navigationController,registerRepository: registerRepository, statsRepository: statsRepository, userReposytory: userRepository, workoutsRepository:workoutsRepository )
+        
+        mainViewController.appNavigate = appNavigator
         
         window?.rootViewController = navigationController
            window?.makeKeyAndVisible()

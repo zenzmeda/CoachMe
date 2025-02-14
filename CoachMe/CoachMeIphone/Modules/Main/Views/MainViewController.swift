@@ -27,9 +27,12 @@ class MainViewController: UIViewController {
     private let registerViewModel: RegisterViewModel
     private let loginViewModel: LoginViewModel
     
-    init(registerViewModel: RegisterViewModel, loginViewModel: LoginViewModel) {
+    var appNavigate: AppNavigator?
+    
+    init(registerViewModel: RegisterViewModel, loginViewModel: LoginViewModel, appNavigate: AppNavigator? = nil) {
         self.registerViewModel = registerViewModel
         self.loginViewModel = loginViewModel
+        self.appNavigate = appNavigate
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -56,6 +59,7 @@ class MainViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("appNavigate в MainViewController: \(String(describing: appNavigate))")
         setupUI()
     }
 
@@ -106,12 +110,13 @@ class MainViewController: UIViewController {
     }
 
     @objc private func registerButtonTapped() {
-        let registerVC = RegisterViewController(registerModel: registerViewModel)
-        navigationController?.pushViewController(registerVC, animated: true)
+        print("appNavigate перед вызовом: \(String(describing: appNavigate))")
+        appNavigate?.goToRegistration()
     }
 
     @objc private func loginButtonTapped() {
-        let loginVC = LoginViewController(loginModel: loginViewModel)
-            navigationController?.pushViewController(loginVC, animated: true)
+        print("appNavigate перед вызовом: \(String(describing: appNavigate))")
+        print("goToLogin() вызван в MainViewController")
+        appNavigate?.goToLogin()
     }
 }
