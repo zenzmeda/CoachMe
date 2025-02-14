@@ -24,18 +24,6 @@ import CoreData
 
 class MainViewController: UIViewController {
     
-    private let logoImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = UIImage(named: "logo")
-        imageView.contentMode = .scaleAspectFit
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
-    }()
-
-
-    private let registerButton = UIButton()
-    private let loginButton = UIButton()
-    
     private let registerViewModel: RegisterViewModel
     private let loginViewModel: LoginViewModel
     
@@ -44,6 +32,23 @@ class MainViewController: UIViewController {
         self.loginViewModel = loginViewModel
         super.init(nibName: nil, bundle: nil)
     }
+    
+    private let logoImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(named: "logo")
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+  
+
+    private let registerButton = UIButton()
+    private let loginButton = UIButton()
+    
+    
+    
+  
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")

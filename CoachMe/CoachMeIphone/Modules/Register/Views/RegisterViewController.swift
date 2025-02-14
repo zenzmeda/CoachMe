@@ -59,7 +59,7 @@ class RegisterViewController: UIViewController {
     
     // UIPickerView для выбора клуба
     private let clubPicker = UIPickerView()
-    let clubs = ["Клуб 1", "Клуб 2", "Клуб 3"]
+    let clubs = ["Tulskaya", "Shabolovka", "KrasnyiProspect"]
     
     // Контрол для статуса тренера (сегмент-контрол)
     private let statusSegmentControl = UISegmentedControl()
@@ -229,16 +229,17 @@ class RegisterViewController: UIViewController {
         
         // Ограничения для элементов внутри contentView
         NSLayoutConstraint.activate([
-            nameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
-            nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            nameTextField.heightAnchor.constraint(equalToConstant: 44),
             usernameTextField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
             usernameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             usernameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             usernameTextField.heightAnchor.constraint(equalToConstant: 44),
             
-            emailTextField.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 15),
+            nameTextField.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 15),
+            nameTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            nameTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            nameTextField.heightAnchor.constraint(equalToConstant: 44),
+            
+            emailTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 15),
             emailTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             emailTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             emailTextField.heightAnchor.constraint(equalToConstant: 44),
@@ -268,7 +269,6 @@ class RegisterViewController: UIViewController {
             clubPicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             clubPicker.heightAnchor.constraint(equalToConstant: 100),
             
-            // Размещаем кнопку для выбора пола (вместо UIPickerView)
             genderButton.topAnchor.constraint(equalTo: birthDateTextField.bottomAnchor, constant: 15),
             genderButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             genderButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
@@ -370,41 +370,41 @@ class RegisterViewController: UIViewController {
             .sink(receiveValue: { status in
                 switch status {
                 case .userExist:
-                    self.showAlert(message: "Пользователь уже существует")
+                    self.showAlert(title: "Ошибка", message: "Пользователь уже существует")
                 case .emptyFields:
-                    self.showAlert(message: "Заполните все поля")
+                    self.showAlert(title: "Ошибка", message: "Заполните все поля")
                     self.highlightEmptyFields()
                 case .errorCreate:
-                    self.showAlert(message: "Не удалось создать пользователя. Попробуйте позже.")
+                    self.showAlert(title: "Ошибка", message: "Не удалось создать пользователя. Попробуйте позже.")
                 case .userCreate:
-                    self.showAlert(message: "Регистрация успешна")
+                    self.showAlert(title: "Успех", message: "Регистрация успешна")
                     self.navigateToTabBar()
                 case .incorrectCoachCode:
-                    self.showAlert(message: "Неправильный код тренера")
+                    self.showAlert(title: "Ошибка", message: "Неправильный код тренера")
                 case .errorRegisterTrainer:
-                    self.showAlert(message: "Ошибка регистрации тренера")
+                    self.showAlert(title: "Ошибка", message: "Ошибка регистрации тренера")
                 case .absentCoachCode:
-                    self.showAlert(message: "Не указан код тренера")
+                    self.showAlert(title: "Ошибка", message: "Не указан код тренера")
                 case .ErrorFormatBirthDate:
-                    self.showAlert(message: "Неправильный формат даты рождения")
+                    self.showAlert(title: "Ошибка", message: "Неправильный формат даты рождения")
                 case .IncorrectEmail:
-                    self.showAlert(message: "Некорректный email")
+                    self.showAlert(title: "Ошибка", message: "Некорректный email")
                 case .passwordMismatch:
-                    self.showAlert(message: "Пароли не совпадают")
+                    self.showAlert(title: "Ошибка", message: "Пароли не совпадают")
                 case .IncorrectPhoneNumber:
-                    self.showAlert(message: "Некорректный номер телефона")
+                    self.showAlert(title: "Ошибка", message: "Некорректный номер телефона")
                 case .errorCreateGYM:
-                    self.showAlert(message: "Ошибка создания клуба")
+                    self.showAlert(title: "Ошибка", message: "Ошибка создания клуба")
                 }
             })
             .store(in: &cancellables)  // Сохраняем подписку для управления жизненным циклом
-    }
-    
-    private func showAlert(message: String) {
-        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
-    }
+        }
+
+        private func showAlert(title: String, message: String) {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+        }
     
     private func highlightEmptyFields() {
         let fields: [(UITextField, String?)] = [
@@ -428,11 +428,10 @@ class RegisterViewController: UIViewController {
         }
     }
     
-    func navigateToTabBar() {
-        // Переход к MainTabBarController
-        let mainTabBarController = MainTabBarController()
-        self.navigationController?.setViewControllers([mainTabBarController], animated: true)
-    }
+    func goToLogin() {
+        let loginViewController = LoginViewController(loginModel: <#T##LoginViewModel#>)
+            self.navigationController?.pushViewController(loginViewController, animated: true)
+        }
 }
 
 

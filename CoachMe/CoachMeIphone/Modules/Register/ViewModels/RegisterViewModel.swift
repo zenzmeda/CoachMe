@@ -132,8 +132,10 @@ class RegisterViewModel{
     
     func formateDate (_ dateString: String) -> Date?
     {
+//        print(dateString)
         let dateFomatter = DateFormatter()
-        dateFomatter.dateFormat = "yyyy-MM-dd"
+        
+        dateFomatter.dateFormat = "dd.MM.yyyy"
         return dateFomatter.date(from: dateString)
         
             
