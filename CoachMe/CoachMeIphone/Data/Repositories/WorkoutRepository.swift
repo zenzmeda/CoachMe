@@ -6,8 +6,17 @@
 //
 
 import Foundation
+import Combine
 
 class WorkoutsRepository: WorkoutsRepositoryProtocol {
+    
+    private let dataService: UserLocalDataSource
+    private let apiService: MockAPIService
+    
+    init(dataService: UserLocalDataSource, apiService: MockAPIService) {
+        self.dataService = dataService
+        self.apiService = apiService
+    }
   
     func fetchWorkouts() -> [Stats] {
         // Симуляция загрузки данных. В реальности можно загрузить данные из базы данных или API
@@ -20,7 +29,27 @@ class WorkoutsRepository: WorkoutsRepositoryProtocol {
         return sampleStats
     }
     
-    func saveWorkouts () {
-        
+    func saveWorkouts(user: UserModel, workouts: [Stats]) -> AnyPublisher<[Stats], RegisterError> {
+        do{
+            let status = try dataService.saveWorkoutsToLocalDB(workouts: workouts, user: user)
+            
+            switch status{
+            case .success:
+                return apiService.saveWorkouts(workouts: workouts, user: user).map
+                {  _ in
+                    return workouts
+                }
+                .catch {error -> AnyPublisher<[Stats], RegisterError> in
+                    print("Ошибка при отправке тренировки на сервер: \(error)")
+                    return Fail(error: RegisterError.networkError).eraseToAnyPublisher()
+                }.eraseToAnyPublisher()
+            case .failure(let error):
+                return Fail(error: error).eraseToAnyPublisher()
+                
+            }
+        }
+        catch{
+            return Fail(error: RegisterError.unknownError).eraseToAnyPublisher()
+        }
     }
 }

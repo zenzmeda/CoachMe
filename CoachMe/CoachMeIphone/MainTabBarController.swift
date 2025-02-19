@@ -7,11 +7,25 @@
 import UIKit
 
 class MainTabBarController: UITabBarController {
+    
+    private let currentUser: UserModel
+    private let repositoryToWorkout: WorkoutsRepositoryProtocol
+    
+    init(currentUser: UserModel, repositoryWorkout: WorkoutsRepositoryProtocol) {
+        self.currentUser = currentUser
+        self.repositoryToWorkout = repositoryWorkout
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let workoutR = WorkoutsRepository()
-        let workoutsVM = WorkoutsViewModel(repository: workoutR)
+        
+        let workoutsVM = WorkoutsViewModel(repository: repositoryToWorkout)
         let workoutsVC = WorkoutsViewController(viewModel: workoutsVM)
         
         let statsR = StatsRepository()

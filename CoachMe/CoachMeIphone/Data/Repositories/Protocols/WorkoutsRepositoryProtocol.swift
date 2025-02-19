@@ -5,8 +5,10 @@
 //  Created by Vadim Timofeev on 12.02.2025.
 //
 
+import Combine
+
 protocol WorkoutsRepositoryProtocol{
+    func saveWorkouts(user: UserModel, workouts: [Stats]) -> AnyPublisher<[Stats], RegisterError>
     func fetchWorkouts () -> [Stats]
-    func saveWorkouts ()
     
 }

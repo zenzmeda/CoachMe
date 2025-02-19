@@ -85,4 +85,20 @@ class MockAPIService: APIServiceProtocol{
             
         }.eraseToAnyPublisher()
     }
+    
+    func saveWorkouts(workouts: [Stats], user: UserModel) -> AnyPublisher<Void, RegisterError> {
+        return Future {promise in
+            if let existingUser = self.users.first(where: {$0.id == user.id}){
+                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                    existingUser.progress.append(contentsOf: workouts)
+                    promise(.success(()))
+                }} else {
+                    DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                        promise(.failure(RegisterError.userAbsentError))
+                    }
+                                }
+                                }
+        .receive(on: DispatchQueue.main)
+        .eraseToAnyPublisher()
+    }
 }

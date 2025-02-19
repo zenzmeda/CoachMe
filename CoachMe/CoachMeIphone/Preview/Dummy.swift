@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 class DummyUserRepository: UserReposytoryProtocol {
     func fetchUser() -> UserModel {
@@ -27,5 +28,16 @@ class DummyStatsRepository: StatsRepositoryProtocol {
     func saveStats(_ stats: Stats) {
         
     }
+    
 }
 
+struct NavigationControllerPreview: UIViewControllerRepresentable {
+    let navigationController: UINavigationController
+
+    func makeUIViewController(context: Context) -> UINavigationController {
+        navigationController
+    }
+
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
+    }
+}

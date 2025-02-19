@@ -27,6 +27,24 @@ class UserLocalDataSource {
         return StatusUser.success
     }
     
+    func saveWorkoutsToLocalDB(workouts: [Stats], user: UserModel) throws -> Result<Void,RegisterError> {
+        let fetchRequest: NSFetchRequest <User> = User.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", user.id.uuidString)
+        do{
+            let existingUsers = try context.fetch(fetchRequest)
+            guard let existingUser = existingUsers.first else {return .failure(.userAbsentError)}
+            
+            for workout in workouts {
+                let newWorkout = workout.statsToCoreData(context: context)
+                newWorkout.user = existingUser
+            }
+            try context.save()
+            return .success(())
+        } catch {
+            return .failure(.unknownError)
+        }
+    }
+    
     func saveTrainerToLocalDB(trainer: TrainerModel) throws -> RegisterTrainer {
         let fetchRequest: NSFetchRequest<Trainer> = Trainer.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", trainer.id.uuidString)

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 #Preview {
     let users: [UserModel] = []
@@ -23,8 +24,13 @@ class LoginViewController: UIViewController {
     
     private let loginModel: LoginViewModel
     
-    init(loginModel: LoginViewModel) {
+    var cancellable: Set<AnyCancellable> = []
+    
+    var appNavigate : AppNavigator?
+    
+    init(loginModel: LoginViewModel, appNavigator: AppNavigator? = nil) {
         self.loginModel = loginModel
+        self.appNavigate = appNavigator
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -44,10 +50,11 @@ class LoginViewController: UIViewController {
 
     private func setupUI() {
         // Настроим поля для ввода email и пароля
-        emailTextField.placeholder = "Email or username"
+        emailTextField.textContentType = .emailAddress
+        emailTextField.placeholder = "username"
         emailTextField.borderStyle = .roundedRect  // Сделаем рамку у поля
         emailTextField.translatesAutoresizingMaskIntoConstraints = false  // Включаем AutoLayout
-
+        passwordTextField.textContentType = .password
         passwordTextField.placeholder = "Password"
         passwordTextField.isSecureTextEntry = true  // Скрытые символы для пароля
         passwordTextField.borderStyle = .roundedRect  // Рамка у поля
@@ -65,6 +72,7 @@ class LoginViewController: UIViewController {
         registerButton.layer.shadowOpacity = 0.2  // Прозрачность тени
         registerButton.layer.shadowRadius = 4  // Радиус размытия тени
         registerButton.translatesAutoresizingMaskIntoConstraints = false  // Включаем AutoLayout
+        registerButton.addTarget(self, action: #selector(registerButtonTapped), for: .touchUpInside)
 
         // Добавляем элементы на экран
         view.addSubview(emailTextField)
@@ -96,10 +104,45 @@ class LoginViewController: UIViewController {
         let email = emailTextField.text
         let password = passwordTextField.text
         
-        // Обработка входа
-        if let email = email, let password = password, !email.isEmpty, !password.isEmpty {
-        }
+       let statusAuthentication = loginModel.authentication(userName: email, password: password)
+        statusAuthentication.sink(receiveCompletion:{ [weak self] completion in
+            switch completion{
+            case .finished:
+                self?.showAlert(title: "SUCCESS", message: "Успешная авторизация")
+            case .failure(let error):
+                DispatchQueue.main.async{
+                    switch error{
+                    case .emptyFields:
+                        self?.showAlert(title: "Error", message: "Заполните поля")
+                    case .checkUserNameError:
+                        self?.showAlert(title: "Error", message: "Пользователь не найден")
+                    case .passwordDoNotMatch:
+                        self?.showAlert(title: "Error", message: "Неверный пароль или имя")
+                    default:
+                        self?.showAlert(title: "Error", message: "Unknown error")
+                    }
+                }}}, receiveValue: { [weak self] user in
+                    DispatchQueue.main.async{
+                        self?.appNavigate?.currentUser = user
+                        self?.goToMainTabBar()
+                    }
+            }).store(in: &cancellable)
     }
+    
+    private func showAlert(title: String, message: String, completion: ( ()->Void)? = nil){
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default) {
+            _ in completion?()
+        }
+        alert.addAction(okAction)
+        present(alert, animated:  true)
+    }
+    
+    private func goToMainTabBar () {
+        appNavigate?.goToMainTabBar()
+    }
+    
+    
 }
 
 

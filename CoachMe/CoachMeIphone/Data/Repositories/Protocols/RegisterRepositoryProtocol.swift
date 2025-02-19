@@ -13,6 +13,8 @@ enum RegisterError: Error {
     case unknownError
     case userAbsentError
     case checkUserNameError
+    case passwordDoNotMatch
+    case emptyFields
     
 }
 
@@ -20,6 +22,8 @@ enum StatusUser{
     case alreadyExists
     case success
 }
+
+
 
 enum RegisterTrainer:Error{
     case trainerExists
@@ -32,7 +36,6 @@ enum RegisterTrainer:Error{
 
 protocol RegisterRepositoryProtocol{
     func saveUser(_ user: UserModel) -> AnyPublisher<UserModel, RegisterError>
-    func saveTrainer(_ trainer: TrainerModel) -> AnyPublisher<TrainerModel, RegisterTrainer> 
+    func saveTrainer(_ trainer: TrainerModel) -> AnyPublisher<TrainerModel, RegisterTrainer>
+    func authenticationUser(_ userName: String, _ password: String) -> AnyPublisher<UserModel,RegisterError>
 }
-
-

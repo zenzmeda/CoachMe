@@ -110,13 +110,10 @@ class MainViewController: UIViewController {
     }
 
     @objc private func registerButtonTapped() {
-        print("appNavigate перед вызовом: \(String(describing: appNavigate))")
         appNavigate?.goToRegistration()
     }
 
     @objc private func loginButtonTapped() {
-        print("appNavigate перед вызовом: \(String(describing: appNavigate))")
-        print("goToLogin() вызван в MainViewController")
         appNavigate?.goToLogin()
     }
 }

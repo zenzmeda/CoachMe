@@ -24,11 +24,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let trainer: [TrainerModel] = []
         let apiService = MockAPIService(users: users, trainer: trainer)
         let context = PersistenceManager.shared.context
+        let dataService = UserLocalDataSource(context: context)
         
-        let registerRepository = RegisterRepository(apiService: apiService, dataService:UserLocalDataSource(context: context))
+        let registerRepository = RegisterRepository(apiService: apiService, dataService: dataService)
         let userRepository = UserRepository()
         let statsRepository = StatsRepository()
-        let workoutsRepository = WorkoutsRepository()
+        let workoutsRepository = WorkoutsRepository(dataService: dataService, apiService: apiService)
         
         let registerVM = RegisterViewModel(repository: registerRepository)
         
@@ -37,7 +38,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let navigationController = UINavigationController(rootViewController: mainViewController)
         
         // Инициализируем AppNavigator и передаем в него окно
-        appNavigator = AppNavigator(navigationController: navigationController,registerRepository: registerRepository, statsRepository: statsRepository, userReposytory: userRepository, workoutsRepository:workoutsRepository )
+        appNavigator = AppNavigator(navigationController: navigationController,registerRepository: registerRepository, statsRepository: statsRepository, userReposytory: userRepository, workoutsRepository:workoutsRepository , window: window)
         
         mainViewController.appNavigate = appNavigator
         

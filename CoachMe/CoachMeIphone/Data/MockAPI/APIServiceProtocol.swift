@@ -12,4 +12,5 @@ protocol APIServiceProtocol{
     func createUser(user: UserModel) -> Future<UserModel, RegisterError>
     func checkUserNameAvailability(userName: String) -> Future<Bool, Error>
     func checkCoachCode(newTrainer: TrainerModel) -> AnyPublisher<TrainerModel, RegisterTrainer>
+    func saveWorkouts (workouts: [Stats], user: UserModel) -> AnyPublisher<Void, RegisterError>
 }

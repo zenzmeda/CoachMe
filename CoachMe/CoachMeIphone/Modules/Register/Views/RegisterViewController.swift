@@ -7,25 +7,43 @@
 
 import UIKit
 import Combine
+import SwiftUI
 
 #Preview {
-    let trainer: [TrainerModel] = []
-    let users: [UserModel] = []
-    let apiService = MockAPIService(users: users, trainer: trainer)
-    let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
+    let previewView: some View = {
+        let trainer: [TrainerModel] = []
+        let users: [UserModel] = []
+        let apiService = MockAPIService(users: users, trainer: trainer)
+        let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
     
-    let rep = RegisterRepository(apiService: apiService, dataService: dataService)
-    let statR = StatsRepository()
-    let userR = UserRepository()
-    let workoutsR = WorkoutsRepository()
+        let rep = RegisterRepository(apiService: apiService, dataService: dataService)
+        let statR = StatsRepository()
+        let userR = UserRepository()
+        let workoutsR = WorkoutsRepository(dataService: dataService, apiService: apiService)
     
-    let viewController = RegisterViewModel(repository: rep)
-    let controller = RegisterViewController(registerModel: viewController)
-    let navigationController = UINavigationController(rootViewController: controller)
-    let appnavigator = AppNavigator(navigationController: navigationController, registerRepository: rep, statsRepository: statR, userReposytory: userR, workoutsRepository: workoutsR)
-    return navigationController
+        let viewModel = RegisterViewModel(repository: rep)
+        let controller = RegisterViewController(registerModel: viewModel)
+        let navigationController = UINavigationController(rootViewController: controller)
     
+        let appNavigator = AppNavigator(
+            navigationController: navigationController,
+            registerRepository: rep,
+            statsRepository: statR,
+            userReposytory: userR,
+            workoutsRepository: workoutsR,
+            window: nil // Для превью можно оставить nil
+        )
+    
+        // Выполняем присваивание как побочный эффект
+        controller.appNavigator = appNavigator
+        
+        // Возвращаем обёртку с navigationController
+        return NavigationControllerPreview(navigationController: navigationController)
+    }()
+    
+    previewView
 }
+
 
 class RegisterViewController: UIViewController {
     
@@ -122,13 +140,16 @@ class RegisterViewController: UIViewController {
         // Настройка текстовых полей
         setupTextField(usernameTextField, placeholder: "Username")
         setupTextField(emailTextField, placeholder: "Email")
-        setupTextField(passwordTextField, placeholder: "Password", isSecure: true)
+        setupTextField(passwordTextField, placeholder: "Password")
         setupTextField(confirmPasswordTextField, placeholder: "Confirm Password", isSecure: true)
         setupTextField(phoneTextField, placeholder: "Phone", keyboardType: .phonePad)
         setupTextField(nameTextField, placeholder: "Name")
         
         // Настройка поля и UIDatePicker для даты рождения
         setupBirthDateField()
+        
+        passwordTextField.textContentType = .none
+        passwordTextField.isSecureTextEntry = true
         
         // Настройка UIPickerView для выбора клуба
         clubPicker.translatesAutoresizingMaskIntoConstraints = false

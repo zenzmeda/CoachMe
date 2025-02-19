@@ -67,7 +67,7 @@ class RegisterViewModel{
                         gender: currentGender,
                         birthday: date,
                         gym: currentGYM,
-                        statusTrainer: 1  // статус тренера
+                        statusTrainer: 1 , password: password // статус тренера
                     )
             
             return repository.saveTrainer(newTrainer)
@@ -91,7 +91,7 @@ class RegisterViewModel{
                 }
                 .eraseToAnyPublisher()
         } else {
-            let newUser = UserModel(id: newId, name: name, avatar: "default_avatar", progress: [], status: UserModel.UserStatus.outGym, email: email, userName: userName, phoneNumber: phoneNumber, gender:currentGender , birthday: date, gym: currentGYM , statusTrainer: 0)
+            let newUser = UserModel(id: newId, name: name, avatar: "default_avatar", progress: [], status: UserModel.UserStatus.outGym, email: email, userName: userName, phoneNumber: phoneNumber, gender:currentGender , birthday: date, gym: currentGYM , statusTrainer: 0, password: password)
             return repository.saveUser(newUser)
                 .map{_ in StatusRegister.userCreate}
                 .catch{error -> Just<StatusRegister> in
