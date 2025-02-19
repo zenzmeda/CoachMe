@@ -43,10 +43,12 @@ extension TrainerModel{
 extension Trainer{
     func toTrainerModel()->TrainerModel?{
         guard let id = self.id,
-              let coachCode = self.coachCode else{
+              let coachCode = self.coachCode,
+              let userName = self.userName
+        else{
             return nil
         }
-        return TrainerModel(id: id, coachCode: coachCode)
+        return TrainerModel(id: id, coachCode: coachCode, userName: userName)
     }
 }
 
@@ -66,7 +68,7 @@ extension User {
             }
             let stats: [Stats] = self.statsData?.compactMap{(statsDataObject) -> Stats? in
                 guard let statsData = statsDataObject as? StatsData else { return nil }
-                return Stats(exerciseName: statsData.exerciseName ?? "", workingWeight: statsData.workingWeight, repetitions: statsData.repetitions, sets: statsData.sets, date: statsData.date ?? Date())
+                return Stats(exerciseName: statsData.exerciseName ?? "", workingWeight: statsData.workingWeight, repetitions: statsData.repetitions, sets: statsData.sets, date: statsData.date ?? Date(), status: .confirmed)
                       } ?? []
             
             var currentGYM = UserModel.GYM.Tulskaya

@@ -25,7 +25,7 @@ class MainTabBarController: UITabBarController {
         super.viewDidLoad()
         
         
-        let workoutsVM = WorkoutsViewModel(repository: repositoryToWorkout)
+        let workoutsVM = WorkoutsViewModel(repository: repositoryToWorkout, user: currentUser)
         let workoutsVC = WorkoutsViewController(viewModel: workoutsVM)
         
         let statsR = StatsRepository()

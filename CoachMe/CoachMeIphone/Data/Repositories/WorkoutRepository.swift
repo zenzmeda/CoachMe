@@ -21,9 +21,9 @@ class WorkoutsRepository: WorkoutsRepositoryProtocol {
     func fetchWorkouts() -> [Stats] {
         // Симуляция загрузки данных. В реальности можно загрузить данные из базы данных или API
         let sampleStats = [
-                    Stats(exerciseName: "Push-up", workingWeight: 0, repetitions: 15, sets: 3, date: Date()),
-                    Stats(exerciseName: "Squats", workingWeight: 50, repetitions: 12, sets: 4, date: Date()),
-                    Stats(exerciseName: "Deadlift", workingWeight: 100, repetitions: 10, sets: 3, date: Date())
+            Stats(exerciseName: "Push-up", workingWeight: 0, repetitions: 15, sets: 3, date: Date(),status: .awaitingConfirmation),
+            Stats(exerciseName: "Squats", workingWeight: 50, repetitions: 12, sets: 4, date: Date(),status: .awaitingConfirmation),
+            Stats(exerciseName: "Deadlift", workingWeight: 100, repetitions: 10, sets: 3, date: Date(),status: .awaitingConfirmation)
                 ]
 
         return sampleStats
@@ -51,5 +51,13 @@ class WorkoutsRepository: WorkoutsRepositoryProtocol {
         catch{
             return Fail(error: RegisterError.unknownError).eraseToAnyPublisher()
         }
+    }
+    
+    func sendTrainingForConfirmation(user: UserModel, trainer: TrainerModel) -> AnyPublisher<Void, RegisterError>{
+        return apiService.addTrainingForConfirmation(user: user, trainer: trainer)
+    }
+    
+    func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>{
+        return apiService.getTrainer()
     }
 }

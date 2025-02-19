@@ -13,4 +13,6 @@ protocol APIServiceProtocol{
     func checkUserNameAvailability(userName: String) -> Future<Bool, Error>
     func checkCoachCode(newTrainer: TrainerModel) -> AnyPublisher<TrainerModel, RegisterTrainer>
     func saveWorkouts (workouts: [Stats], user: UserModel) -> AnyPublisher<Void, RegisterError>
+    func addTrainingForConfirmation(user: UserModel, trainer: TrainerModel) -> AnyPublisher<Void, RegisterError>
+    func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>
 }

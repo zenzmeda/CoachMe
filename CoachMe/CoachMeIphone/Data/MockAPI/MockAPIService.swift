@@ -101,4 +101,29 @@ class MockAPIService: APIServiceProtocol{
         .receive(on: DispatchQueue.main)
         .eraseToAnyPublisher()
     }
+    
+    func addTrainingForConfirmation(user: UserModel, trainer: TrainerModel) -> AnyPublisher<Void, RegisterError>{
+        return Future { promise in
+            if let _ = self.users.first(where: {$0.id == user.id}), let existingTrainer = self.trainer.first(where: {$0.id == trainer.id}){
+                DispatchQueue.main.asyncAfter(deadline:.now()+1){
+                    existingTrainer.addConfirmationTraining(user: user)
+                }
+            }else {
+                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                    promise(.failure(RegisterError.userOrTrainerAbsent))
+                }
+            } }.eraseToAnyPublisher()
+    }
+    
+    func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>{
+        return Future { promise in
+            DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                if self.trainer.isEmpty{
+                    promise (.failure(.emptyListOfTrainers))
+                }else {
+                    promise(.success(self.trainer))
+                }
+            }
+        }.eraseToAnyPublisher()
+    }
 }

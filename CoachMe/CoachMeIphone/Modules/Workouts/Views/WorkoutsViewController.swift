@@ -6,14 +6,21 @@
 //
 
 import UIKit
+import Combine
 
 #Preview {
     let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
     let users : [UserModel] = []
-    let trainer : [TrainerModel] = []
+    let trainer1 = TrainerModel(id: UUID(), coachCode: "COACH001", userName: "Тренер Алексей")
+    let trainer2 = TrainerModel(id: UUID(), coachCode: "COACH002", userName: "Тренер Ольга")
+    let trainer3 = TrainerModel(id: UUID(), coachCode: "COACH003", userName: "Тренер Дмитрий")
+
+    let trainer : [TrainerModel] = [trainer1,trainer2,trainer3]
+    let progress: [Stats] = []
     let apiService = MockAPIService(users: users, trainer: trainer)
     let dummyRepository = WorkoutsRepository(dataService: dataService, apiService: apiService)
-    let dummyViewModel = WorkoutsViewModel(repository: dummyRepository)
+    let user = UserModel(id: UUID(), name: "vadim", avatar: "defuult", progress: progress, status: .outGym, email: "@", userName: "Vadim", phoneNumber: "898989898899", gender: .female, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
+    let dummyViewModel = WorkoutsViewModel(repository: dummyRepository, user: user)
     let controller = WorkoutsViewController(viewModel: dummyViewModel)
     let navigationController = UINavigationController(rootViewController: controller)
     navigationController
@@ -26,6 +33,8 @@ class WorkoutsViewController: UIViewController {
     var startButton: UIButton!
     var finishButton: UIButton!
     var addExerciseButton: UIButton!
+    
+    private var cancellables: Set<AnyCancellable> = []
     
     init(viewModel: WorkoutsViewModel) {
         self.viewModel = viewModel
@@ -133,38 +142,86 @@ class WorkoutsViewController: UIViewController {
         // Логика для завершения тренировки
         print("Завершаем тренировку!")
         
-        // Сбрасываем титул
-        navigationItem.title = ""
+        viewModel.fetchTrainers()
         
-        // Скрываем таблицу
-        tableView.isHidden = true
+        viewModel.$trainers
+            .receive(on: DispatchQueue.main)
+            .sink {[weak self] trainers in
+                if !trainers.isEmpty{
+                    self?.showTrainersAlert(trainers: trainers)
+                    // Сбрасываем титул
+                    self?.navigationItem.title = ""
+                    
+                    // Скрываем таблицу
+                    self?.tableView.isHidden = true
+                    
+                    self?.addExerciseButton.isHidden = true
+                    self?.viewModel.clearCurrentWorkouts()
+                    self?.tableView.reloadData()
+                    
+                    // Показываем кнопку "Начать тренировку"
+                    self?.startButton.isHidden = false
+                    
+                    // Скрываем кнопку "Завершить тренировку"
+                    self?.finishButton.isHidden = true
+                }else {
+                    self?.navigationItem.title = ""
+                    
+                    // Скрываем таблицу
+                    self?.tableView.isHidden = true
+                    
+                    self?.addExerciseButton.isHidden = true
+                    self?.viewModel.clearCurrentWorkouts()
+                    self?.tableView.reloadData()
+                    
+                    // Показываем кнопку "Начать тренировку"
+                    self?.startButton.isHidden = false
+                    
+                    // Скрываем кнопку "Завершить тренировку"
+                    self?.finishButton.isHidden = true
+                    print("Список тренеров пока пуст, подождите...")
+                }}.store(in: &cancellables)
         
-        addExerciseButton.isHidden = true
-        viewModel.clearCurrentWorkouts()
-        tableView.reloadData()
         
-        // Показываем кнопку "Начать тренировку"
-        startButton.isHidden = false
-        
-        // Скрываем кнопку "Завершить тренировку"
-        finishButton.isHidden = true
     }
     
     @objc func addExerciseTapped() {
-        let availableExercises = ["Жим лёжа", "Приседания", "Становая тяга", "Подтягивания", "Отжимания"]
-        
-        let alert = UIAlertController(title: "Выберите упражнение", message: nil, preferredStyle: .actionSheet)
-        
-        for exercise in availableExercises {
+        let exerciseCategories: [String: [String]] = [
+             "Грудь": ["Жим лёжа", "Отжимания", "Сведение рук"],
+             "Ноги": ["Приседания", "Выпады", "Сгибание ног"],
+             "Спина": ["Становая тяга", "Подтягивания", "Тяга блока"]
+         ]
+
+         let categoryAlert = UIAlertController(title: "Выберите категорию", message: nil, preferredStyle: .actionSheet)
+
+         for (category, exercises) in exerciseCategories {
+             let action = UIAlertAction(title: category, style: .default) { _ in
+                 self.showExercisesAlert(for: category, exercises: exercises)
+             }
+             categoryAlert.addAction(action)
+         }
+
+         categoryAlert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
+
+         present(categoryAlert, animated: true, completion: nil)
+    }
+    
+    
+    func showExercisesAlert(for category: String, exercises: [String]) {
+        let exercisesAlert = UIAlertController(title: "Выберите упражнение", message: nil, preferredStyle: .actionSheet)
+
+        for exercise in exercises {
             let action = UIAlertAction(title: exercise, style: .default) { _ in
                 self.addExercise(name: exercise)
             }
-            alert.addAction(action)
+            exercisesAlert.addAction(action)
         }
-        
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-        
-        present(alert, animated: true, completion: nil)
+
+        exercisesAlert.addAction(UIAlertAction(title: "Назад", style: .cancel, handler: { _ in
+            self.addExerciseTapped() // Вернуться к выбору категории
+        }))
+
+        present(exercisesAlert, animated: true, completion: nil)
     }
     
     private func setupTableView() {
@@ -190,7 +247,7 @@ class WorkoutsViewController: UIViewController {
     }
     
     private func addExercise(name: String) {
-        let newWorkout = Stats(exerciseName: name, workingWeight: 0, repetitions: 0, sets: 0, date: Date())
+        let newWorkout = Stats(exerciseName: name, workingWeight: 0, repetitions: 0, sets: 0, date: Date(),status: .inProgress)
         viewModel.addWorkoutToCurrentWokkout(newWorkout)
         tableView.reloadData()
     }
@@ -256,6 +313,7 @@ extension WorkoutsViewController: UITableViewDelegate, UITableViewDataSource {
             textField.placeholder = "Подходов"
         }
         
+        // Кнопка для сохранения изменений
         let saveAction = UIAlertAction(title: "Сохранить", style: .default) { _ in
             guard let weightText = alert.textFields?[0].text,
                   let repetitionsText = alert.textFields?[1].text,
@@ -266,13 +324,43 @@ extension WorkoutsViewController: UITableViewDelegate, UITableViewDataSource {
             
             // Обновляем тренировку в модели
             self.viewModel.updateWorkout(workout, newWeight: newWeight, newRepetitions: newRepetitions, newSets: newSets)
+            
+            // Обновляем таблицу
             self.tableView.reloadRows(at: [indexPath], with: .automatic)
         }
         
+        // Кнопка для удаления тренировки
+        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+            // Удаляем тренировку из модели
+            self.viewModel.deleteWorkout(workout)
+            
+            // Обновляем таблицу
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
+        
+        // Кнопка для отмены
         let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
         
+        // Добавляем действия в алерт
         alert.addAction(saveAction)
+        alert.addAction(deleteAction)
         alert.addAction(cancelAction)
+        
+        // Отображаем алерт
+        present(alert, animated: true, completion: nil)
+    }
+
+    private func showTrainersAlert(trainers: [TrainerModel]) {
+        let alert = UIAlertController(title: "Выберите тренера", message: nil, preferredStyle: .actionSheet)
+        
+        for trainer in trainers {
+            let action = UIAlertAction(title: trainer.userName, style: .default) { _ in
+                self.viewModel.sendWorkoutsForConfirmation(user: self.viewModel.getUser(), trainer: trainer)
+            }
+            alert.addAction(action)
+        }
+        
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
         
         present(alert, animated: true, completion: nil)
     }

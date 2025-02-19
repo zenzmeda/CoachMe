@@ -104,7 +104,7 @@ class StatsViewController: UIViewController, UITableViewDataSource {
                   let workingWeight = Double(alert.textFields?[1].text ?? ""),
                   let repetitions = Int16(alert.textFields?[2].text ?? ""),
                   let sets = Int16(alert.textFields?[3].text ?? "") {
-                   let newStats = Stats(exerciseName: exerciseName, workingWeight: workingWeight, repetitions: repetitions, sets: sets, date: Date())
+                   let newStats = Stats(exerciseName: exerciseName, workingWeight: workingWeight, repetitions: repetitions, sets: sets, date: Date(),status: .confirmed)
                    self.viewModel.saveStat(newStats)
                    self.tableView.reloadData()
                }

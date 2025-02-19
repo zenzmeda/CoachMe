@@ -10,5 +10,6 @@ import Combine
 protocol WorkoutsRepositoryProtocol{
     func saveWorkouts(user: UserModel, workouts: [Stats]) -> AnyPublisher<[Stats], RegisterError>
     func fetchWorkouts () -> [Stats]
-    
+    func sendTrainingForConfirmation(user: UserModel, trainer: TrainerModel) -> AnyPublisher<Void, RegisterError>
+    func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>
 }

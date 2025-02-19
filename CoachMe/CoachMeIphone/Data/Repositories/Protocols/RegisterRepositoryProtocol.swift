@@ -15,6 +15,8 @@ enum RegisterError: Error {
     case checkUserNameError
     case passwordDoNotMatch
     case emptyFields
+    case userOrTrainerAbsent
+    case emptyListOfTrainers
     
 }
 

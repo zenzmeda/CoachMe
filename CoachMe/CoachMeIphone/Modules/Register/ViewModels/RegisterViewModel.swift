@@ -54,7 +54,7 @@ class RegisterViewModel{
             }
             
             
-            let newTrainer = TrainerModel(id: newId, coachCode: coachCode)
+            let newTrainer = TrainerModel(id: newId, coachCode: coachCode, userName: userName)
             let newUser = UserModel(
                         id: newId,
                         name: name,

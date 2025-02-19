@@ -21,8 +21,8 @@ class DummyUserRepository: UserReposytoryProtocol {
 class DummyStatsRepository: StatsRepositoryProtocol {
     func fetchStats() -> [Stats]{
         return [
-                    Stats(exerciseName: "Squat", workingWeight: 100, repetitions: 12, sets: 3, date: Date()),
-                    Stats(exerciseName: "Deadlift", workingWeight: 120, repetitions: 10, sets: 3, date: Date())
+            Stats(exerciseName: "Squat", workingWeight: 100, repetitions: 12, sets: 3, date: Date(),status: .confirmed),
+            Stats(exerciseName: "Deadlift", workingWeight: 120, repetitions: 10, sets: 3, date: Date(),status: .awaitingConfirmation)
                 ]
     }
     func saveStats(_ stats: Stats) {
