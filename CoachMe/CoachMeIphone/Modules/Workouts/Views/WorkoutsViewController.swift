@@ -10,20 +10,26 @@ import Combine
 
 #Preview {
     let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
-    let users : [UserModel] = []
-    let trainer1 = TrainerModel(id: UUID(), coachCode: "COACH001", userName: "Тренер Алексей")
+    let progress: [Stats] = []
+        let trainer1 = TrainerModel(id: UUID(), coachCode: "COACH001", userName: "Тренер Алексей")
     let trainer2 = TrainerModel(id: UUID(), coachCode: "COACH002", userName: "Тренер Ольга")
     let trainer3 = TrainerModel(id: UUID(), coachCode: "COACH003", userName: "Тренер Дмитрий")
+    let userTrainer = UserModel(id: trainer1.id, name: "Алексей", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Тренер Алексей", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 1)
+    let currentUser = UserModel(id: UUID(), name: "Vadim", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Vadim", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
+    let user = UserModel(id: UUID(), name: "vadim", avatar: "defuult", progress: progress, status: .outGym, email: "@", userName: "Vadim", phoneNumber: "898989898899", gender: .female, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
 
+    let users : [UserModel] = [userTrainer, currentUser, user]
     let trainer : [TrainerModel] = [trainer1,trainer2,trainer3]
-    let progress: [Stats] = []
+    
     let apiService = MockAPIService(users: users, trainer: trainer)
     let dummyRepository = WorkoutsRepository(dataService: dataService, apiService: apiService)
-    let user = UserModel(id: UUID(), name: "vadim", avatar: "defuult", progress: progress, status: .outGym, email: "@", userName: "Vadim", phoneNumber: "898989898899", gender: .female, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
-    let dummyViewModel = WorkoutsViewModel(repository: dummyRepository, user: user)
+   
+  
+    let dummyViewModel = WorkoutsViewModel(repository: dummyRepository, user: currentUser)
     let controller = WorkoutsViewController(viewModel: dummyViewModel)
     let navigationController = UINavigationController(rootViewController: controller)
     navigationController
+    
 }
 
 class WorkoutsViewController: UIViewController {
@@ -33,6 +39,7 @@ class WorkoutsViewController: UIViewController {
     var startButton: UIButton!
     var finishButton: UIButton!
     var addExerciseButton: UIButton!
+    let activityIndicator = UIActivityIndicatorView(style: .large)
     
     private var cancellables: Set<AnyCancellable> = []
     
@@ -144,44 +151,34 @@ class WorkoutsViewController: UIViewController {
         
         viewModel.fetchTrainers()
         
+       
+            activityIndicator.center = view.center
+            activityIndicator.startAnimating()
+            view.addSubview(activityIndicator)
+            
+        
         viewModel.$trainers
             .receive(on: DispatchQueue.main)
             .sink {[weak self] trainers in
                 if !trainers.isEmpty{
                     self?.showTrainersAlert(trainers: trainers)
-                    // Сбрасываем титул
-                    self?.navigationItem.title = ""
-                    
-                    // Скрываем таблицу
-                    self?.tableView.isHidden = true
-                    
-                    self?.addExerciseButton.isHidden = true
-                    self?.viewModel.clearCurrentWorkouts()
-                    self?.tableView.reloadData()
-                    
-                    // Показываем кнопку "Начать тренировку"
-                    self?.startButton.isHidden = false
-                    
-                    // Скрываем кнопку "Завершить тренировку"
-                    self?.finishButton.isHidden = true
+                    self?.swapFinishStartButtom()
+                
                 }else {
-                    self?.navigationItem.title = ""
-                    
-                    // Скрываем таблицу
-                    self?.tableView.isHidden = true
-                    
-                    self?.addExerciseButton.isHidden = true
-                    self?.viewModel.clearCurrentWorkouts()
-                    self?.tableView.reloadData()
-                    
-                    // Показываем кнопку "Начать тренировку"
-                    self?.startButton.isHidden = false
-                    
-                    // Скрываем кнопку "Завершить тренировку"
-                    self?.finishButton.isHidden = true
                     print("Список тренеров пока пуст, подождите...")
                 }}.store(in: &cancellables)
         
+        
+    }
+    
+    func swapFinishStartButtom () {
+        activityIndicator.stopAnimating()
+        navigationItem.title = ""
+        addExerciseButton.isHidden = true
+        tableView.isHidden = true
+        viewModel.clearCurrentWorkouts()
+        startButton.isHidden = false
+        finishButton.isHidden = true
         
     }
     

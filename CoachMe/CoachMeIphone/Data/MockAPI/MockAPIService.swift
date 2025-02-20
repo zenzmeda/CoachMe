@@ -106,10 +106,13 @@ class MockAPIService: APIServiceProtocol{
         return Future { promise in
             if let _ = self.users.first(where: {$0.id == user.id}), let existingTrainer = self.trainer.first(where: {$0.id == trainer.id}){
                 DispatchQueue.main.asyncAfter(deadline:.now()+1){
+                    print("Добавление тренировок...")
                     existingTrainer.addConfirmationTraining(user: user)
+                    promise(.success(()))
                 }
             }else {
                 DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                    print("Ошибка добавления тренировок на сервер")
                     promise(.failure(RegisterError.userOrTrainerAbsent))
                 }
             } }.eraseToAnyPublisher()

@@ -13,6 +13,7 @@ class WorkoutsViewModel {
     private let repository: WorkoutsRepositoryProtocol
     private let currentUser: UserModel
     @Published private(set) var trainers: [TrainerModel] = []
+    @Published var isLoadingTrainers = false
     
     
     private var cancellables = Set<AnyCancellable>()
@@ -89,12 +90,19 @@ class WorkoutsViewModel {
     }
     
     func fetchTrainers () {
+        self.isLoadingTrainers = true
         repository.getTrainer()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: {completion in
-                if case let .failure(failure) = completion {
-                    print("Ошибка загрузки тренеров: \(failure)")
+            .sink(receiveCompletion: { [weak self] completion in
+                guard let self = self else {return}
+                switch completion{
+                case .finished:
+                    self.isLoadingTrainers = false
+                case .failure(let error):
+                    print("Ошибка загрузки тренеров: \(error)")
+                    self.isLoadingTrainers = false
                 }}, receiveValue: {[weak self] trainers in
                     self?.trainers = trainers}).store(in: &cancellables)
+        print("Тренеры загружены: \(trainers)")
     }
 }
