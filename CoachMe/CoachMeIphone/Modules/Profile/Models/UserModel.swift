@@ -21,6 +21,7 @@ class UserModel{
     var gym: GYM
     var statusTrainer: Int16
     var password: String?
+    var level: Int = 1
     
     init(id: UUID, name: String, avatar: String, progress: [Stats], status: UserStatus, email: String, userName: String, phoneNumber: String, gender: Gender, birthday: Date, gym: GYM, statusTrainer: Int16, password: String? = nil) {
         self.id = id

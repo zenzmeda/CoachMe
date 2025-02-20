@@ -6,13 +6,49 @@
 //
 
 import Foundation
+import Combine
 
 class StatsRepository: StatsRepositoryProtocol{
-    func fetchStats() -> [Stats]{
-        return []
+    
+    private let apiService: MockAPIService
+    private let dataService: UserLocalDataSource
+    
+    init(apiService: MockAPIService, dataService: UserLocalDataSource) {
+        self.apiService = apiService
+        self.dataService = dataService
     }
     
     func saveStats(_ stats: Stats){
         
     }
+    
+    
+    func fetchStats(user: UserModel) -> AnyPublisher<[Stats], RegisterError>{
+        return apiService.fetchUsers()
+            .tryMap{ users in
+                guard let user = users.first(where: {$0.id == user.id}) else {
+                    throw RegisterError.userAbsentError
+                }
+                return user.progress
+            }
+            .mapError{error in
+                error as? RegisterError ?? RegisterError.unknownError}
+            .eraseToAnyPublisher()
+    }
+    
+   
+    
+    func authenticationUser(_ userName: String, _ password: String) -> AnyPublisher<UserModel, RegisterError> {
+        return apiService.fetchUsers()
+            .tryMap{ users in
+                guard let user = users.first(where: {$0.userName == userName && $0.password == password}) else{
+                    throw RegisterError.passwordDoNotMatch
+                }
+                return user
+            }
+            .mapError{error in
+                error as? RegisterError ?? RegisterError.unknownError}
+            .eraseToAnyPublisher()
+    }
+    
 }

@@ -24,9 +24,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		887B10602D562ADB005F20DD /* CoachMeIphone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = CoachMeIphone.app; path = "/Users/mamkinsup/Desktop/PETPROJECT/CoachMe/build/Debug-iphoneos/CoachMeIphone.app"; sourceTree = "<absolute>"; };
-		887B10782D562ADE005F20DD /* CoachMeIphoneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = CoachMeIphoneTests.xctest; path = "/Users/mamkinsup/Desktop/PETPROJECT/CoachMe/build/Debug-iphoneos/CoachMeIphone.app/PlugIns/CoachMeIphoneTests.xctest"; sourceTree = "<absolute>"; };
-		887B10822D562ADE005F20DD /* CoachMeIphoneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = CoachMeIphoneUITests.xctest; path = "/Users/mamkinsup/Desktop/PETPROJECT/CoachMe/build/Debug-iphoneos/CoachMeIphoneUITests-Runner.app/PlugIns/CoachMeIphoneUITests.xctest"; sourceTree = "<absolute>"; };
+		885A706C2D6673EA00B242C1 /* CoachMeIphone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoachMeIphone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		885A706D2D6673EA00B242C1 /* CoachMeIphoneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoachMeIphoneTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		885A706E2D6673EA00B242C1 /* CoachMeIphoneUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoachMeIphoneUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -82,6 +82,9 @@
 			isa = PBXGroup;
 			children = (
 				887B10612D562ADB005F20DD /* CoachMeIphone */,
+				885A706C2D6673EA00B242C1 /* CoachMeIphone.app */,
+				885A706D2D6673EA00B242C1 /* CoachMeIphoneTests.xctest */,
+				885A706E2D6673EA00B242C1 /* CoachMeIphoneUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -107,7 +110,7 @@
 			packageProductDependencies = (
 			);
 			productName = CoachMeIphone;
-			productReference = 887B10602D562ADB005F20DD /* CoachMeIphone.app */;
+			productReference = 885A706C2D6673EA00B242C1 /* CoachMeIphone.app */;
 			productType = "com.apple.product-type.application";
 		};
 		887B10772D562ADE005F20DD /* CoachMeIphoneTests */ = {
@@ -127,7 +130,7 @@
 			packageProductDependencies = (
 			);
 			productName = CoachMeIphoneTests;
-			productReference = 887B10782D562ADE005F20DD /* CoachMeIphoneTests.xctest */;
+			productReference = 885A706D2D6673EA00B242C1 /* CoachMeIphoneTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		887B10812D562ADE005F20DD /* CoachMeIphoneUITests */ = {
@@ -147,7 +150,7 @@
 			packageProductDependencies = (
 			);
 			productName = CoachMeIphoneUITests;
-			productReference = 887B10822D562ADE005F20DD /* CoachMeIphoneUITests.xctest */;
+			productReference = 885A706E2D6673EA00B242C1 /* CoachMeIphoneUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -272,7 +275,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -305,7 +308,7 @@
 				INFOPLIST_KEY_UIStatusBarStyle = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

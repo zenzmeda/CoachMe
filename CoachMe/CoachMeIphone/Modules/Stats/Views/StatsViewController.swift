@@ -6,126 +6,235 @@
 //
 
 import UIKit
+import Combine
 
 // MARK: - Preview для Xcode
 #Preview {
-    let dummyRepository = DummyStatsRepository() // Фейковый репозиторий для превью
-    let dummyViewModel = StatsViewModel(repository: dummyRepository)
-    let statsViewController = StatsViewController(viewModel: dummyViewModel)
+    let workout1 = Stats(exerciseName: "Отжимания", workingWeight: 10, repetitions: 1000, sets: 3, date: Date(), status: .confirmed, exp: Stats.countEx(exerciseName: "Отжимания", repetitions: 2, sets: 2))
+    let workout2 = Stats(exerciseName: "Подтягивания", workingWeight: 10, repetitions: 2, sets: 5, date: Date(), status: .confirmed, exp: Stats.countEx(exerciseName: "Подтягивания", repetitions: 2, sets: 2))
+    let workout3 = Stats(exerciseName: "Становая тяга", workingWeight: 20, repetitions: 220, sets: 2, date: Date(), status: .inProgress)
+    let workout4 = Stats(exerciseName: "Приседания", workingWeight: 20, repetitions: 220, sets: 2, date: Date(), status: .awaitingConfirmation)
+    let progress: [Stats] = [workout1, workout2, workout3, workout4]
+        let trainer1 = TrainerModel(id: UUID(), coachCode: "COACH001", userName: "Тренер Алексей")
+    let trainer2 = TrainerModel(id: UUID(), coachCode: "COACH002", userName: "Тренер Ольга")
+    let trainer3 = TrainerModel(id: UUID(), coachCode: "COACH003", userName: "Тренер Дмитрий")
+    let userTrainer = UserModel(id: trainer1.id, name: "Алексей", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Тренер Алексей", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 1)
+    let currentUser = UserModel(id: UUID(), name: "Vadim", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Vadim", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
+    let user = UserModel(id: UUID(), name: "vadim", avatar: "defuult", progress: progress, status: .outGym, email: "@", userName: "Vadim", phoneNumber: "898989898899", gender: .female, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
+    let users: [UserModel] = [userTrainer, currentUser, user]
+    let trainer: [TrainerModel] = [trainer1, trainer2, trainer3]
+    
+    let apiService = MockAPIService(users: users, trainer: trainer)
+    let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
+    let statsRepository = StatsRepository(apiService: apiService, dataService: dataService)
+    
+    let statsViewModel = StatsViewModel(repository: statsRepository, user: currentUser)
+    let statsViewController = StatsViewController(viewModel: statsViewModel)
     let navigationController = UINavigationController(rootViewController: statsViewController)
     return navigationController
 
 }
 
+
 class StatsViewController: UIViewController, UITableViewDataSource {
     private let tableView = UITableView()
     private let viewModel: StatsViewModel
+    private let levelRingView = LevelRingView()
+    private let rewardButton = UIButton()
     
-
-    // Инициализация с инъекцией зависимости: передаем StatsViewModel
+    private var cancellables = Set<AnyCancellable>()
+    
     init(viewModel: StatsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
-    // Требуемый инициализатор для Storyboard (не используется, если создаем программно)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        bindViewModel()
+        
+        view.backgroundColor = .black
         title = "Статистика"
+        
+        setupLevelRing()
         setupTableView()
+        setupRewardButton()
         
-        setupAddButton()
-        
-        // Загружаем данные статистики через ViewModel
+        // Ждём загрузки данных перед обновлением LevelRing
         viewModel.loadStatsData()
-        tableView.reloadData()
+            .receive(on: DispatchQueue.main)  // Обновляем UI на главном потоке
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    print("Данные загружены.")
+                case .failure(let error):
+                    print("Ошибка загрузки данных: \(error)")
+                }
+            }, receiveValue: { [weak self] _ in
+                self?.updateLevelRing() // Обновляем LevelRing только после загрузки
+            }).store(in: &cancellables)
+    }
+
+    
+    private func setupLevelRing() {
+        view.addSubview(levelRingView)
+        levelRingView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            levelRingView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            levelRingView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 100),
+            levelRingView.widthAnchor.constraint(equalToConstant: 100),
+            levelRingView.heightAnchor.constraint(equalToConstant: 100)
+        ])
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateLevelRing() // Проверяем, не изменился ли прогресс
     }
     
     private func setupTableView() {
         view.addSubview(tableView)
+        tableView.backgroundColor = .black
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "StatsCell")
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Применяем Auto Layout для tableView, чтобы он занимал весь экран
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.topAnchor.constraint(equalTo: levelRingView.bottomAnchor, constant: 200),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
     
-    private func setupAddButton() {
-           // Создаем кнопку для добавления упражнения
-           let addButton = UIBarButtonItem(title: "Добавить", style: .plain, target: self, action: #selector(addExercise))
-           
-           // Добавляем кнопку в правую часть navigation bar
-           self.navigationItem.rightBarButtonItem = addButton
-       }
+    private func setupRewardButton() {
+        view.addSubview(rewardButton)
+        rewardButton.setTitle("Награды", for: .normal)
+        rewardButton.setTitleColor(.black, for: .normal)
+        rewardButton.backgroundColor = UIColor(red: 0.96, green: 0.87, blue: 0.70, alpha: 1.0)
+        rewardButton.layer.cornerRadius = 10
+        rewardButton.translatesAutoresizingMaskIntoConstraints = false
+        rewardButton.addTarget(self, action: #selector(showRewards), for: .touchUpInside)
+        
+        NSLayoutConstraint.activate([
+            rewardButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            rewardButton.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: -150),
+            rewardButton.widthAnchor.constraint(equalToConstant: 200),
+            rewardButton.heightAnchor.constraint(equalToConstant: 40)
+        ])
+    }
     
-    // Метод для обработки нажатия на кнопку
-       @objc private func addExercise() {
-           print("Добавить упражнение")
-           
-           // Например, можно показать диалог или новый экран для добавления упражнения
-           // Пример вызова alert с полями для ввода данных:
-           let alert = UIAlertController(title: "Добавить упражнение", message: "Введите данные для упражнения", preferredStyle: .alert)
-           
-           alert.addTextField { textField in
-               textField.placeholder = "Название упражнения"
-           }
-           
-           alert.addTextField { textField in
-               textField.placeholder = "Вес (кг)"
-               textField.keyboardType = .decimalPad
-           }
-           
-           alert.addTextField { textField in
-               textField.placeholder = "Повторения"
-               textField.keyboardType = .numberPad
-           }
-           
-           alert.addTextField { textField in
-               textField.placeholder = "Сеты"
-               textField.keyboardType = .numberPad
-           }
-           
-           alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-           
-           alert.addAction(UIAlertAction(title: "Сохранить", style: .default, handler: { _ in
-               // Считываем данные из текстовых полей и добавляем новое упражнение
-               if let exerciseName = alert.textFields?[0].text,
-                  let workingWeight = Double(alert.textFields?[1].text ?? ""),
-                  let repetitions = Int16(alert.textFields?[2].text ?? ""),
-                  let sets = Int16(alert.textFields?[3].text ?? "") {
-                   let newStats = Stats(exerciseName: exerciseName, workingWeight: workingWeight, repetitions: repetitions, sets: sets, date: Date(),status: .confirmed)
-                   self.viewModel.saveStat(newStats)
-                   self.tableView.reloadData()
-               }
-           }))
-           
-           present(alert, animated: true)
-       }
+    private func updateLevelRing() {
+        viewModel.loadStatsData()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .finished:
+                    print("Данные загружены успешно.")
+                case .failure(let error):
+                    print("Ошибка загрузки данных: \(error)")
+                }
+            }, receiveValue: { [weak self] _ in
+                guard let self = self else { return }
+                
+                let currentExp = self.viewModel.getCurrentExp()
+                let currentLevel = self.viewModel.getLevelSync()
+                let maxExp = self.viewModel.experienceForLevel(level: currentLevel + 1)
+                
+                print("CurrentExp: \(currentExp) MAX: \(maxExp)")
+                
+                self.viewModel.getLevel()
+                    .receive(on: DispatchQueue.main) // <--- Обновление на главном потоке
+                    .sink(receiveCompletion: { completion in
+                        switch completion {
+                        case .finished:
+                            print("Уровень успешно обновлен.")
+                        case .failure(let error):
+                            print("Ошибка level: \(error)")
+                        }
+                    }, receiveValue: { level in
+                        self.levelRingView.setLevelLabel(level)
+                    }).store(in: &self.cancellables)
+                
+                let progress = maxExp > 0 ? Float(currentExp) / Float(maxExp) : 0
+                self.levelRingView.setProgress(progress)
+                self.levelRingView.setNeedsDisplay()
+                print("Progress: \(progress)")
+            }).store(in: &cancellables)
+    }
+
+    
+    @objc private func showRewards() {
+        let rewardsVC = RewardsViewController(level: viewModel.level)
+        let navController = UINavigationController(rootViewController: rewardsVC)
+        present(navController, animated: true)
+    }
+    
+    private func bindViewModel() {
+        viewModel.$currentStats
+            .receive(on: DispatchQueue.main)
+            .sink {[weak self] _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                guard let self = self else { return }
+                                if self.viewModel.currentStats.isEmpty {
+                                    self.showNoDataMessage()
+                                } else {
+                                    self.tableView.reloadData()
+                                }
+                            }
+                        }
+                        .store(in: &cancellables)
+        
+        viewModel.$error
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                if let error = error {
+                    self?.showError(error)
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func showError(_ error: Error) {
+        let message = error.localizedDescription.isEmpty ? "Неизвестная ошибка" : error.localizedDescription
+        let alert = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
+    
+    private func showNoDataMessage() {
+        let alert = UIAlertController(title: "Нет данных", message: "Для отображения статистики требуется больше информации.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
     
     // MARK: - UITableViewDataSource
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.getRepository().fetchStats().count
+        return viewModel.currentStats.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "StatsCell", for: indexPath)
-        let stat = viewModel.getRepository().fetchStats()[indexPath.row]
-        
-        // Формируем текст с описанием статистики
-        cell.textLabel?.text = "\(stat.exerciseName): \(stat.repetitions) reps, \(stat.sets) sets, \(stat.workingWeight)kg"
+        if indexPath.row < viewModel.currentStats.count {
+            cell.textLabel?.text = "\(viewModel.currentStats[indexPath.row].exerciseName) - Exp: \(viewModel.currentStats[indexPath.row].exp)"
+            switch viewModel.currentStats[indexPath.row].status {
+                   case .confirmed:
+                cell.textLabel?.textColor = UIColor(red: 0.96, green: 0.87, blue: 0.70, alpha: 1.0) // бежевый цвет
+            case .inProgress:
+                       cell.textLabel?.textColor = .orange
+            case .awaitingConfirmation:
+                       cell.textLabel?.textColor = .red
+                   }
+          } else {
+              cell.textLabel?.text = "Нет данных" // Иначе отображаем дефолтный текст
+              cell.textLabel?.textColor = .white
+          }
+        cell.backgroundColor = .black
         return cell
     }
-
 }

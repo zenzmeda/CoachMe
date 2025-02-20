@@ -14,6 +14,7 @@ class WorkoutsViewModel {
     private let currentUser: UserModel
     @Published private(set) var trainers: [TrainerModel] = []
     @Published var isLoadingTrainers = false
+    @Published var UserInGym: UserModel.UserStatus = .outGym
     
     
     private var cancellables = Set<AnyCancellable>()
@@ -76,13 +77,24 @@ class WorkoutsViewModel {
                     print("Ошибка при сохранении: \(error)")
                 }
             })
-            .eraseToAnyPublisher() // Не забываем вернуть AnyPublisher
+            .eraseToAnyPublisher()
+    }
+    
+    func mockConfirmation(){
+        repository.mockConfirmation(user: currentUser).sink(receiveCompletion: {completion in
+            switch completion{
+            case .finished:
+                print("MockConfirmation - success")
+            case .failure(let error):
+                print("Ошибка мокового подтверждения тренировок\(error)")
+            }}, receiveValue: {_ in}).store(in: &cancellables)
     }
     
     func sendWorkoutsForConfirmation (user: UserModel, trainer: TrainerModel) {
-        repository.sendTrainingForConfirmation(user: user, trainer: trainer).sink(receiveCompletion: {completion in
+        repository.sendTrainingForConfirmation(user: user, trainer: trainer).sink(receiveCompletion: {[weak self] completion in
             switch completion{
             case .finished:
+                self?.mockConfirmation() // Отключить с реальным API
                 print("Тренировки успешно отправились")
             case .failure(let error):
                 print("Ошибка отправки тренировок \(error)")
@@ -104,5 +116,19 @@ class WorkoutsViewModel {
                 }}, receiveValue: {[weak self] trainers in
                     self?.trainers = trainers}).store(in: &cancellables)
         print("Тренеры загружены: \(trainers)")
+    }
+    
+    func getStatusUserGYM () {
+        repository.getStatusUserGYM(user: currentUser).sink(receiveCompletion: { completion in
+            switch completion{
+            case .finished:
+                print("status get")
+            case .failure(let error):
+                print("\(error)")
+            }
+        }, receiveValue: {[weak self] value in
+            self?.currentUser.status = value
+            self?.UserInGym = value
+        }).store(in: &cancellables)
     }
 }

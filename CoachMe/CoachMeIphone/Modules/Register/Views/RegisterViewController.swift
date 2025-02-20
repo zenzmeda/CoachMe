@@ -17,7 +17,7 @@ import SwiftUI
         let dataService = UserLocalDataSource(context: UserLocalDataSource.createTestContext())
     
         let rep = RegisterRepository(apiService: apiService, dataService: dataService)
-        let statR = StatsRepository()
+        let statR = StatsRepository(apiService: apiService, dataService: dataService)
         let userR = UserRepository()
         let workoutsR = WorkoutsRepository(dataService: dataService, apiService: apiService)
     
@@ -38,7 +38,7 @@ import SwiftUI
         controller.appNavigator = appNavigator
         
         // Возвращаем обёртку с navigationController
-        return NavigationControllerPreview(navigationController: navigationController)
+return  NavigationControllerPreview(navigationController: navigationController)
     }()
     
     previewView

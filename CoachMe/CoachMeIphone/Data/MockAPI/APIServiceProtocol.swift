@@ -15,4 +15,7 @@ protocol APIServiceProtocol{
     func saveWorkouts (workouts: [Stats], user: UserModel) -> AnyPublisher<Void, RegisterError>
     func addTrainingForConfirmation(user: UserModel, trainer: TrainerModel) -> AnyPublisher<Void, RegisterError>
     func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>
+    func mockConfirmationWorkouts(user: UserModel) -> AnyPublisher<Void, RegisterError>
+    func getUserStatusGYM(user: UserModel)->AnyPublisher<UserModel.UserStatus,RegisterError>
+    func fetchUser(user: UserModel) -> AnyPublisher<UserModel, RegisterError>
 }

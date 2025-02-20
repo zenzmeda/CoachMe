@@ -55,10 +55,16 @@ class WorkoutsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-    }
-    
-    private func setupNavigationBar() {
-        navigationItem.title = ""  // Устанавливаем пустой титул в начале
+        viewModel.getStatusUserGYM()
+        viewModel.$UserInGym
+            .dropFirst()
+            .sink(receiveValue: {[weak self] isInGym in
+                if isInGym == UserModel.UserStatus.inGym{
+                    self?.startButton.isEnabled = true
+                }else {
+                    self?.startButton.isEnabled = false
+                    self?.showAlertForNotInGym()
+                }}).store(in: &cancellables)
     }
     
     private func setupUI() {
@@ -88,6 +94,7 @@ class WorkoutsViewController: UIViewController {
         startButton.layer.masksToBounds = true
         startButton.translatesAutoresizingMaskIntoConstraints = false
         startButton.addTarget(self, action: #selector(startTrainingTapped), for: .touchUpInside)
+        startButton.isEnabled = false
         
         view.addSubview(startButton)
         
@@ -128,9 +135,6 @@ class WorkoutsViewController: UIViewController {
             addExerciseButton.widthAnchor.constraint(equalToConstant: 200),
             addExerciseButton.heightAnchor.constraint(equalToConstant: 50)
         ])
-
-        
-
     }
     
     @objc func startTrainingTapped() {
@@ -151,11 +155,9 @@ class WorkoutsViewController: UIViewController {
         
         viewModel.fetchTrainers()
         
-       
-            activityIndicator.center = view.center
-            activityIndicator.startAnimating()
-            view.addSubview(activityIndicator)
-            
+        activityIndicator.center = view.center
+        activityIndicator.startAnimating()
+        view.addSubview(activityIndicator)
         
         viewModel.$trainers
             .receive(on: DispatchQueue.main)
@@ -163,12 +165,10 @@ class WorkoutsViewController: UIViewController {
                 if !trainers.isEmpty{
                     self?.showTrainersAlert(trainers: trainers)
                     self?.swapFinishStartButtom()
-                
+                    
                 }else {
                     print("Список тренеров пока пуст, подождите...")
                 }}.store(in: &cancellables)
-        
-        
     }
     
     func swapFinishStartButtom () {
@@ -184,23 +184,37 @@ class WorkoutsViewController: UIViewController {
     
     @objc func addExerciseTapped() {
         let exerciseCategories: [String: [String]] = [
-             "Грудь": ["Жим лёжа", "Отжимания", "Сведение рук"],
-             "Ноги": ["Приседания", "Выпады", "Сгибание ног"],
-             "Спина": ["Становая тяга", "Подтягивания", "Тяга блока"]
-         ]
-
-         let categoryAlert = UIAlertController(title: "Выберите категорию", message: nil, preferredStyle: .actionSheet)
-
-         for (category, exercises) in exerciseCategories {
-             let action = UIAlertAction(title: category, style: .default) { _ in
-                 self.showExercisesAlert(for: category, exercises: exercises)
-             }
-             categoryAlert.addAction(action)
-         }
-
-         categoryAlert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-
-         present(categoryAlert, animated: true, completion: nil)
+            "Грудь": ["Жим лёжа", "Отжимания", "Сведение рук"],
+            "Ноги": ["Приседания", "Выпады", "Сгибание ног"],
+            "Спина": ["Становая тяга", "Подтягивания", "Тяга блока"]
+        ]
+        
+        let categoryAlert = UIAlertController(title: "Выберите категорию", message: nil, preferredStyle: .actionSheet)
+        
+        for (category, exercises) in exerciseCategories {
+            let action = UIAlertAction(title: category, style: .default) { _ in
+                self.showExercisesAlert(for: category, exercises: exercises)
+            }
+            categoryAlert.addAction(action)
+        }
+        
+        categoryAlert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
+        
+        present(categoryAlert, animated: true, completion: nil)
+    }
+    
+    // Функция для отображения алерта, если пользователь не в клубе
+    private func showAlertForNotInGym() {
+        let alertController = UIAlertController(
+            title: "Вы не в клубе",
+            message: "Для того чтобы редактировать тренировки, необходимо быть в клубе.",
+            preferredStyle: .alert
+        )
+        
+        let action = UIAlertAction(title: "Ок", style: .default, handler: nil)
+        alertController.addAction(action)
+        
+        present(alertController, animated: true, completion: nil)
     }
     
     
@@ -222,6 +236,7 @@ class WorkoutsViewController: UIViewController {
     }
     
     private func setupTableView() {
+        
         // Инициализируем таблицу вручную
         tableView = UITableView(frame: view.bounds, style: .plain)
         tableView.delegate = self
@@ -328,6 +343,7 @@ extension WorkoutsViewController: UITableViewDelegate, UITableViewDataSource {
         
         // Кнопка для удаления тренировки
         let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+            
             // Удаляем тренировку из модели
             self.viewModel.deleteWorkout(workout)
             
@@ -346,7 +362,7 @@ extension WorkoutsViewController: UITableViewDelegate, UITableViewDataSource {
         // Отображаем алерт
         present(alert, animated: true, completion: nil)
     }
-
+    
     private func showTrainersAlert(trainers: [TrainerModel]) {
         let alert = UIAlertController(title: "Выберите тренера", message: nil, preferredStyle: .actionSheet)
         
@@ -358,77 +374,7 @@ extension WorkoutsViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-        
         present(alert, animated: true, completion: nil)
     }
 }
-
-class WorkoutTableViewCell: UITableViewCell {
-    // Метки для отображения данных
-    var exerciseNameLabel: UILabel!
-    var workingWeightLabel: UILabel!
-    var repetitionsLabel: UILabel!
-    var setsLabel: UILabel!
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
-        exerciseNameLabel = UILabel()
-        exerciseNameLabel.backgroundColor = UIColor(red: 0.96, green: 0.87, blue: 0.70, alpha: 0.9)
-        exerciseNameLabel.textColor = .black
-        exerciseNameLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-        exerciseNameLabel.textAlignment = .center
-        exerciseNameLabel.layer.cornerRadius = 10
-        exerciseNameLabel.layer.masksToBounds = true
-        exerciseNameLabel.numberOfLines = 0 // Поддержка многострочного текста
-        exerciseNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        exerciseNameLabel.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
-
-        
-        
-        workingWeightLabel = UILabel()
-        workingWeightLabel.backgroundColor = .black
-        workingWeightLabel.textColor = .white
-        workingWeightLabel.numberOfLines = 0
-        workingWeightLabel.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
-        
-        repetitionsLabel = UILabel()
-        repetitionsLabel.backgroundColor = .black
-        repetitionsLabel.textColor = .white
-        repetitionsLabel.numberOfLines = 0
-        repetitionsLabel.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
-        
-        setsLabel = UILabel()
-        setsLabel.backgroundColor = .black
-        setsLabel.textColor = .white
-        setsLabel.numberOfLines = 0
-        setsLabel.setContentCompressionResistancePriority(.defaultHigh, for: .vertical)
-        
-        // Настройка меток (например, добавление в супервью, установка шрифтов и т.д.)
-        let stackView = UIStackView(arrangedSubviews: [exerciseNameLabel, workingWeightLabel, repetitionsLabel, setsLabel])
-        stackView.axis = .vertical
-        stackView.spacing = 5
-        stackView.alignment = .fill
-        stackView.distribution = .equalSpacing
-        stackView.isLayoutMarginsRelativeArrangement = true
-        stackView.layoutMargins = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)  // Добавляем отступы внутри StackView
-        contentView.addSubview(stackView)
-        
-        
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 10),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10)
-        ])
-        layer.cornerRadius = 10
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-
 

@@ -44,7 +44,7 @@ class AppNavigator{
     func goToMainTabBar() {
             guard let window = window else { return }
         guard let currentUser = currentUser else {return}
-        let mainTabBarController = MainTabBarController(currentUser: currentUser, repositoryWorkout: workoutsRepository)
+        let mainTabBarController = MainTabBarController(currentUser: currentUser, repositoryWorkout: workoutsRepository, repositoryToStats: statsRepository)
                     window.rootViewController = mainTabBarController
                     window.makeKeyAndVisible()
         }

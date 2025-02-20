@@ -14,6 +14,17 @@ class UserLocalDataSource {
         self.context = context
     }
     
+    func getUser(userName: String) throws -> UserModel {
+        let fetchRequest: NSFetchRequest<User> = User.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "userName == %@", userName)
+        
+        guard let user = try context.fetch(fetchRequest).first,
+              let userModel = user.toUserModel() else {
+            throw RegisterError.userAbsentError
+        }
+        return userModel
+    }
+    
     func saveUserToLocalDB(user: UserModel) throws -> StatusUser{
         let fetchRequest: NSFetchRequest <User> = User.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "userName == %@", user.id.uuidString)

@@ -6,11 +6,29 @@
 //
 
 import Foundation
+import Combine
+
 
 class UserRepository: UserReposytoryProtocol{
-    func fetchUser() -> UserModel {
-        return UserModel(id: UUID(), name: "Vadim", avatar: "default_avatar", progress: [], status: .outGym,email: "dafult", userName: "default", phoneNumber: "default", gender: UserModel.Gender.male, birthday: Date(), gym: UserModel.GYM.KrasnyiProspect, statusTrainer: 0)
+    
+    private let apiService: MockAPIService
+    private let dataService: UserLocalDataSource
+    
+    init(apiService: MockAPIService, dataService: UserLocalDataSource) {
+        self.apiService = apiService
+        self.dataService = dataService
     }
+    
+    
+    func fetchUser(user: UserModel) -> AnyPublisher<UserModel, RegisterError> {
+        return apiService.fetchUser(user: user)
+    }
+    
+    func fetchUserFromDB(userName: String) throws -> UserModel {
+        try dataService.getUser(userName: userName)
+    }
+    
+    
     func updateUser(_ user: UserModel) {
         
     }

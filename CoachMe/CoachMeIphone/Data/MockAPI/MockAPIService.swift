@@ -12,11 +12,36 @@ class MockAPIService: APIServiceProtocol{
     private var users: [UserModel]
     private var trainer: [TrainerModel]
     
+    let progress: [Stats]
+    let arrayusers : [UserModel]
+    let arraytrainer : [TrainerModel]
+    
+    let userTrainer: UserModel
+    let currentUser: UserModel
+    let user: UserModel
+    
+    let trainer1 = TrainerModel(id: UUID(), coachCode: "COACH001", userName: "Тренер Алексей")
+    let trainer2 = TrainerModel(id: UUID(), coachCode: "COACH002", userName: "Тренер Ольга")
+    let trainer3 = TrainerModel(id: UUID(), coachCode: "COACH003", userName: "Тренер Дмитрий")
+    
+    
     private var cancellables: Set<AnyCancellable> = []
     
     init(users: [UserModel], trainer: [TrainerModel]) {
         self.users = users
         self.trainer = trainer
+        
+        self.progress = []
+        
+        self.userTrainer = UserModel(id: trainer1.id, name: "Алексей", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Тренер Алексей", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 1)
+        
+        self.currentUser = UserModel(id: UUID(), name: "Vadim", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Vadim", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
+        
+        self.user = UserModel(id: UUID(), name: "Vadim", avatar: "default", progress: progress, status: .outGym, email: "@", userName: "Vadim", phoneNumber: "898989898899", gender: .female, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
+        
+        self.arrayusers = [userTrainer, currentUser, user]
+        self.arraytrainer = [trainer1, trainer2, trainer3]
+        
         
     }
     
@@ -30,6 +55,16 @@ class MockAPIService: APIServiceProtocol{
                 }
             }
         }
+    }
+    func fetchUser(user: UserModel) -> AnyPublisher<UserModel, RegisterError>{
+        return Future {promise in
+            DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                if let user = self.users.first(where: {$0.id == user.id}){
+                    promise (.success(user))
+                }else {
+                    promise(.failure(.userAbsentError))
+                }
+            }}.eraseToAnyPublisher()
     }
     
     func createUser(user: UserModel) -> Future<UserModel, RegisterError> {
@@ -118,6 +153,24 @@ class MockAPIService: APIServiceProtocol{
             } }.eraseToAnyPublisher()
     }
     
+    func mockConfirmationWorkouts(user: UserModel) -> AnyPublisher<Void, RegisterError>{
+        return Future{ promise in
+            if let _ = self.users.first(where: {$0.id == user.id}){
+                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                    self.users.forEach{
+                        $0.progress.forEach{$0.status = .confirmed}
+                    }
+                    print("MockConfirmSuccess")
+                    promise (.success(()))
+                }
+            }else{
+                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                    print("Error mockConfirm")
+                    promise(.failure(RegisterError.networkError))
+                }
+            }}.eraseToAnyPublisher()
+    }
+    
     func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>{
         return Future { promise in
             DispatchQueue.main.asyncAfter(deadline: .now()+1){
@@ -128,5 +181,16 @@ class MockAPIService: APIServiceProtocol{
                 }
             }
         }.eraseToAnyPublisher()
+    }
+    
+    func getUserStatusGYM(user: UserModel) -> AnyPublisher<UserModel.UserStatus, RegisterError> {
+        return Future {promise in
+            DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                if let currentUser = self.users.first(where: {$0.id == user.id}){
+                    promise(.success(currentUser.status))
+                }else {
+                    promise(.failure(.userAbsentError))
+                }
+            }}.eraseToAnyPublisher()
     }
 }

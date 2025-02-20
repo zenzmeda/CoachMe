@@ -17,17 +17,6 @@ class WorkoutsRepository: WorkoutsRepositoryProtocol {
         self.dataService = dataService
         self.apiService = apiService
     }
-  
-    func fetchWorkouts() -> [Stats] {
-        // Симуляция загрузки данных. В реальности можно загрузить данные из базы данных или API
-        let sampleStats = [
-            Stats(exerciseName: "Push-up", workingWeight: 0, repetitions: 15, sets: 3, date: Date(),status: .awaitingConfirmation),
-            Stats(exerciseName: "Squats", workingWeight: 50, repetitions: 12, sets: 4, date: Date(),status: .awaitingConfirmation),
-            Stats(exerciseName: "Deadlift", workingWeight: 100, repetitions: 10, sets: 3, date: Date(),status: .awaitingConfirmation)
-                ]
-
-        return sampleStats
-    }
     
     func saveWorkouts(user: UserModel, workouts: [Stats]) -> AnyPublisher<[Stats], RegisterError> {
         do{
@@ -53,11 +42,19 @@ class WorkoutsRepository: WorkoutsRepositoryProtocol {
         }
     }
     
+    func mockConfirmation(user: UserModel)->AnyPublisher<Void,RegisterError>{
+        return apiService.mockConfirmationWorkouts(user: user)
+    }
+    
     func sendTrainingForConfirmation(user: UserModel, trainer: TrainerModel) -> AnyPublisher<Void, RegisterError>{
         return apiService.addTrainingForConfirmation(user: user, trainer: trainer)
     }
     
     func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>{
         return apiService.getTrainer()
+    }
+    
+    func getStatusUserGYM(user: UserModel) -> AnyPublisher<UserModel.UserStatus, RegisterError> {
+        return apiService.getUserStatusGYM(user: user)
     }
 }
