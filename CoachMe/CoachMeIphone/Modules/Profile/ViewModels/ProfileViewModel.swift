@@ -10,7 +10,7 @@ import Combine
 
 class ProfileViewModel {
     private let repository: UserReposytoryProtocol
-    private var currentUser: UserModel
+    @Published var currentUser: UserModel
     
     private var cancellable = Set<AnyCancellable>()
     
