@@ -22,7 +22,8 @@ CoachMe — приложение для геймификации трениро�
 <details>
   <summary>Скриншоты приложения</summary>
   
-![IMG_3458](https://github.com/user-attachments/assets/726961fb-fc4d-405b-ac8a-0b83f4aceaa8)
+<img src="https://github.com/user-attachments/assets/726961fb-fc4d-405b-ac8a-0b83f4aceaa8" width="400">
+
 ![IMG_3457](https://github.com/user-attachments/assets/646be778-2f9b-4d05-9e17-c765ba365c97)
 ![IMG_3456](https://github.com/user-attachments/assets/adbbbf5d-0647-44de-896d-366b1c4145cf)
 ![IMG_3455](https://github.com/user-attachments/assets/fbd3e686-93ce-4cfd-8001-b715539a83e8)
