@@ -11,11 +11,13 @@ class MainTabBarController: UITabBarController {
     private let currentUser: UserModel
     private let repositoryToWorkout: WorkoutsRepositoryProtocol
     private let repositoryToStats: StatsRepositoryProtocol
+    private let repositoryToUser: UserReposytoryProtocol
     
-    init(currentUser: UserModel, repositoryWorkout: WorkoutsRepositoryProtocol, repositoryToStats: StatsRepositoryProtocol) {
+    init(currentUser: UserModel, repositoryWorkout: WorkoutsRepositoryProtocol, repositoryToStats: StatsRepositoryProtocol, repositoryToUser: UserReposytoryProtocol) {
         self.currentUser = currentUser
         self.repositoryToWorkout = repositoryWorkout
         self.repositoryToStats = repositoryToStats
+        self.repositoryToUser = repositoryToUser
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -33,8 +35,7 @@ class MainTabBarController: UITabBarController {
         let statsVM = StatsViewModel(repository: repositoryToStats, user: currentUser)
         let statsVC = StatsViewController(viewModel: statsVM)
         
-        let profileR = UserRepository()
-        let profileVM = ProfileViewModel(repository: profileR)
+        let profileVM = ProfileViewModel(repository: repositoryToUser, currentUser: currentUser)
         let profileVC = ProfileViewController(viewModel: profileVM)
 
         workoutsVC.title = "Тренировки"

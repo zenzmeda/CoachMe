@@ -27,7 +27,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let dataService = UserLocalDataSource(context: context)
         
         let registerRepository = RegisterRepository(apiService: apiService, dataService: dataService)
-        let userRepository = UserRepository()
+        let userRepository = UserRepository(apiService: apiService, dataService: dataService)
         let statsRepository = StatsRepository(apiService: apiService, dataService: dataService)
         let workoutsRepository = WorkoutsRepository(dataService: dataService, apiService: apiService)
         

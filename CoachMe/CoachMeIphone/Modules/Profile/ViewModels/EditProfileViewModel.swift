@@ -5,27 +5,50 @@
 //  Created by Vadim Timofeev on 09.02.2025.
 //
 import Foundation
+import Combine
 
 class EditProfileViewModel {
     private var reposytory: UserReposytoryProtocol
     
-    init(reposytory: UserReposytoryProtocol) {
+    @Published var currentUser: UserModel
+    @Published var statusLoading = false
+    
+    init(reposytory: UserReposytoryProtocol, currentUser: UserModel) {
         self.reposytory = reposytory
+        self.currentUser = currentUser
     }
     
-    var userName: String {
-        return reposytory.fetchUser().name
+    func  getUser() throws -> UserModel {
+        try reposytory.fetchUserFromDB(userName: currentUser.name)
     }
     
-    var userAvatar: String {
-        return reposytory.fetchUser().avatar
+    func getAvatar () throws -> String{
+        let newCurrentUser = try reposytory.fetchUserFromDB(userName: currentUser.name)
+        return newCurrentUser.avatar
     }
-
-  
-
-    func saveChanges(newName: String, newAvatar: String) {
-        let _: [Stats] = []
-        let user = UserModel(id: UUID(), name: "Vadim", avatar: "default_avatar", progress: [], status: .outGym,email: "dafult", userName: "default", phoneNumber: "default", gender: UserModel.Gender.male, birthday: Date(), gym: UserModel.GYM.KrasnyiProspect,statusTrainer: 0)
-        reposytory.updateUser(user)
+    
+    func getNewName()-> String {
+        return currentUser.name
+    }
+    func getNewAvatar()-> String{
+        return currentUser.avatar
+    }
+    
+    func setName(_ newName: String?){
+        guard let newName = newName else {return}
+        currentUser.name = newName
+    }
+    
+    func setAvatar(_ newAvatar: String?){
+        guard let newAvatar = newAvatar else {return}
+        currentUser.avatar = newAvatar
+    }
+    
+    
+    func saveChanges(newName: String, newAvatar: String) throws {
+        statusLoading = true
+        currentUser.avatar = newAvatar
+        currentUser.name = newName
+        let _ = try reposytory.updateUser(user: currentUser)
     }
 }

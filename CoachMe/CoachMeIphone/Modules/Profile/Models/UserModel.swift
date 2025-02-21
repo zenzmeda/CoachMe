@@ -59,4 +59,19 @@ class UserModel{
     func updateStatus(newStatus: UserStatus) {
         self.status = newStatus
     }
+    
+    func updateLevel(){
+        level = progress.filter{$0.status == .confirmed}.compactMap{$0.exp}.reduce(0,+)
+    }
+    
+    func getAge()->String{
+    let currentDay = Date()
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year], from: self.birthday, to: currentDay)
+        if let age = components.year{
+            return ("Age \(age)")
+        }else {
+            return "invalid date"
+        }
+    }
 }

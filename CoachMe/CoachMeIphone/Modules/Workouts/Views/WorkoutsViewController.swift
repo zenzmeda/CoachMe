@@ -165,7 +165,6 @@ class WorkoutsViewController: UIViewController {
                 if !trainers.isEmpty{
                     self?.showTrainersAlert(trainers: trainers)
                     self?.swapFinishStartButtom()
-                    
                 }else {
                     print("Список тренеров пока пуст, подождите...")
                 }}.store(in: &cancellables)
@@ -369,6 +368,7 @@ extension WorkoutsViewController: UITableViewDelegate, UITableViewDataSource {
         for trainer in trainers {
             let action = UIAlertAction(title: trainer.userName, style: .default) { _ in
                 self.viewModel.sendWorkoutsForConfirmation(user: self.viewModel.getUser(), trainer: trainer)
+                self.viewModel.mockConfirmation()
             }
             alert.addAction(action)
         }

@@ -13,8 +13,6 @@ class MockAPIService: APIServiceProtocol{
     private var trainer: [TrainerModel]
     
     let progress: [Stats]
-    let arrayusers : [UserModel]
-    let arraytrainer : [TrainerModel]
     
     let userTrainer: UserModel
     let currentUser: UserModel
@@ -25,22 +23,29 @@ class MockAPIService: APIServiceProtocol{
     let trainer3 = TrainerModel(id: UUID(), coachCode: "COACH003", userName: "Тренер Дмитрий")
     
     
+    let workout1 = Stats(exerciseName: "Отжимания", workingWeight: 10, repetitions: 1000, sets: 3, date: Date(), status: .confirmed, exp: Stats.countEx(exerciseName: "Отжимания", repetitions: 2, sets: 2))
+    let workout2 = Stats(exerciseName: "Подтягивания", workingWeight: 10, repetitions: 2, sets: 5, date: Date(), status: .confirmed, exp: Stats.countEx(exerciseName: "Подтягивания", repetitions: 2, sets: 2))
+    let workout3 = Stats(exerciseName: "Становая тяга", workingWeight: 20, repetitions: 220, sets: 2, date: Date(), status: .inProgress)
+    let workout4 = Stats(exerciseName: "Приседания", workingWeight: 20, repetitions: 220, sets: 2, date: Date(), status: .awaitingConfirmation)
+    
+    
+    
     private var cancellables: Set<AnyCancellable> = []
     
     init(users: [UserModel], trainer: [TrainerModel]) {
         self.users = users
         self.trainer = trainer
         
-        self.progress = []
+        self.progress = [workout1, workout2, workout3, workout4]
         
         self.userTrainer = UserModel(id: trainer1.id, name: "Алексей", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Тренер Алексей", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 1)
         
-        self.currentUser = UserModel(id: UUID(), name: "Vadim", avatar: "default", progress: progress, status: .inGym, email: "default@default.ru", userName: "Vadim", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
+        self.currentUser = UserModel(id:UUID(uuidString: "123E4567-E89B-12D3-A456-426614174000")! , name: "Vadim", avatar: "default_avatar", progress: progress, status: .inGym, email: "default@default.ru", userName: "Vadim", phoneNumber: "89132056827", gender: .male, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0, password: "123")
         
         self.user = UserModel(id: UUID(), name: "Vadim", avatar: "default", progress: progress, status: .outGym, email: "@", userName: "Vadim", phoneNumber: "898989898899", gender: .female, birthday: Date(), gym: .KrasnyiProspect, statusTrainer: 0)
         
-        self.arrayusers = [userTrainer, currentUser, user]
-        self.arraytrainer = [trainer1, trainer2, trainer3]
+        self.users = [userTrainer, currentUser, user]
+        self.trainer = [trainer1, trainer2, trainer3]
         
         
     }
@@ -156,7 +161,7 @@ class MockAPIService: APIServiceProtocol{
     func mockConfirmationWorkouts(user: UserModel) -> AnyPublisher<Void, RegisterError>{
         return Future{ promise in
             if let _ = self.users.first(where: {$0.id == user.id}){
-                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                DispatchQueue.main.asyncAfter(deadline: .now()+2){
                     self.users.forEach{
                         $0.progress.forEach{$0.status = .confirmed}
                     }
@@ -164,7 +169,7 @@ class MockAPIService: APIServiceProtocol{
                     promise (.success(()))
                 }
             }else{
-                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                DispatchQueue.main.asyncAfter(deadline: .now()+2){
                     print("Error mockConfirm")
                     promise(.failure(RegisterError.networkError))
                 }
@@ -190,6 +195,18 @@ class MockAPIService: APIServiceProtocol{
                     promise(.success(currentUser.status))
                 }else {
                     promise(.failure(.userAbsentError))
+                }
+            }}.eraseToAnyPublisher()
+    }
+    
+    func updateUser (user: UserModel) -> AnyPublisher<Void, RegisterError>{
+        return Future {promise in
+            DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                if let index = self.users.firstIndex(where: {$0.id == user.id}){
+                    self.users[index] = user
+                    promise(.success(()))
+                }else {
+                    promise(.failure(RegisterError.userAbsentError))
                 }
             }}.eraseToAnyPublisher()
     }

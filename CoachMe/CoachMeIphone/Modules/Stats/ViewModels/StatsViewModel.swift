@@ -100,7 +100,6 @@ class StatsViewModel {
                     
                     // Проверяем, как изменяется newLevel
                     while self.experienceForLevel(level: newLevel) <= currentExp {
-                        print("Опыт для уровня \(newLevel): \(self.experienceForLevel(level: newLevel))")
                         newLevel += 1
                     }
                     

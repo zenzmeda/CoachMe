@@ -13,7 +13,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
    
     // MARK: - Application Lifecycle
        func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-           print("HERE")
            // Здесь можно настроить глобальные компоненты, например Core Data или настройки уведомлений
            return true
        }

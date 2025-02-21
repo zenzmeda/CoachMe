@@ -18,7 +18,7 @@ import SwiftUI
     
         let rep = RegisterRepository(apiService: apiService, dataService: dataService)
         let statR = StatsRepository(apiService: apiService, dataService: dataService)
-        let userR = UserRepository()
+        let userR = UserRepository(apiService: apiService, dataService: dataService)
         let workoutsR = WorkoutsRepository(dataService: dataService, apiService: apiService)
     
         let viewModel = RegisterViewModel(repository: rep)

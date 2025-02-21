@@ -18,4 +18,5 @@ protocol APIServiceProtocol{
     func mockConfirmationWorkouts(user: UserModel) -> AnyPublisher<Void, RegisterError>
     func getUserStatusGYM(user: UserModel)->AnyPublisher<UserModel.UserStatus,RegisterError>
     func fetchUser(user: UserModel) -> AnyPublisher<UserModel, RegisterError>
+    func updateUser (user: UserModel) -> AnyPublisher<Void, RegisterError>
 }

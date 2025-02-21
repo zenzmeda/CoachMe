@@ -72,6 +72,22 @@ class UserLocalDataSource {
             }
         }
     
+    func updateUser(user: UserModel) throws -> Result<Void, RegisterError>{
+        let fetchRequest: NSFetchRequest<User> = User.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", user.id.uuidString)
+        
+        let existingUser = try context.fetch(fetchRequest)
+        
+        if let existingUser = existingUser.first{
+            existingUser.name = user.name
+            existingUser.avatar = user.avatar
+            try context.save()
+            return .success(())
+        }else {
+            return .failure(.userAbsentError)
+        }
+    }
+    
     
     //Создание контекста для тестов
     static func createTestContext() -> NSManagedObjectContext {
@@ -84,6 +100,4 @@ class UserLocalDataSource {
            }
            return persistentContainer.viewContext
        }
-    
-    
 }

@@ -14,6 +14,8 @@ class UserRepository: UserReposytoryProtocol{
     private let apiService: MockAPIService
     private let dataService: UserLocalDataSource
     
+    private var cancellable = Set<AnyCancellable>()
+    
     init(apiService: MockAPIService, dataService: UserLocalDataSource) {
         self.apiService = apiService
         self.dataService = dataService
@@ -29,7 +31,34 @@ class UserRepository: UserReposytoryProtocol{
     }
     
     
-    func updateUser(_ user: UserModel) {
-        
+    func updateUser(user: UserModel) throws -> AnyPublisher<Void, RegisterError> {
+        return Future{ promise in
+            do{
+                let result = try self.dataService.updateUser(user: user)
+                switch result{
+                case .success:
+                    self.apiService.updateUser(user: user)
+                        .sink(receiveCompletion: {completion in
+                            switch completion{
+                                
+                            case .finished:
+                                print("Данные обновлены в сети")
+                                promise(.success(()))
+                                
+                            case .failure(_):
+                                print("Ошибка обновления данных в сети")
+                                promise(.failure(.networkError))
+                            }
+                        }, receiveValue: {_ in}).store(in: &self.cancellable)
+                case .failure(let error):
+                    promise(.failure(error))
+                }
+            }catch {
+                promise(.failure(.userAbsentError))
+            }
+        }.eraseToAnyPublisher()
     }
-}
+    }
+
+
+

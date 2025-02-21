@@ -10,5 +10,5 @@ import Combine
 protocol UserReposytoryProtocol{
     func fetchUser(user: UserModel) -> AnyPublisher<UserModel, RegisterError>
     func fetchUserFromDB (userName: String) throws ->  UserModel
-    func updateUser (_ user: UserModel)
+    func updateUser (user: UserModel) throws -> AnyPublisher<Void, RegisterError>
 }
