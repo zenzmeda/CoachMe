@@ -38,17 +38,4 @@ class StatsRepository: StatsRepositoryProtocol{
     
    
     
-    func authenticationUser(_ userName: String, _ password: String) -> AnyPublisher<UserModel, RegisterError> {
-        return apiService.fetchUsers()
-            .tryMap{ users in
-                guard let user = users.first(where: {$0.userName == userName && $0.password == password}) else{
-                    throw RegisterError.passwordDoNotMatch
-                }
-                return user
-            }
-            .mapError{error in
-                error as? RegisterError ?? RegisterError.unknownError}
-            .eraseToAnyPublisher()
-    }
-    
 }

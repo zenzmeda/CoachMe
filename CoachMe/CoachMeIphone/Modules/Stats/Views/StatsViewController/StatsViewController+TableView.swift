@@ -83,11 +83,11 @@ extension StatsViewController: UITableViewDelegate{
                 label.text = "\(stat.exerciseName) - Exp: \(stat.exp)"
                 switch stat.status {
                 case .confirmed:
-                    label.textColor = UIColor(red: 0.96, green: 0.87, blue: 0.70, alpha: 1.0)
+                    label.textColor = .white
                 case .inProgress:
-                    label.textColor = .orange
+                    label.textColor = .black
                 case .awaitingConfirmation:
-                    label.textColor = .red
+                    label.textColor = .black
                 }
                 
                 container.addSubview(label)

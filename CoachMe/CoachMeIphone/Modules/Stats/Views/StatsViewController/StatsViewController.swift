@@ -78,9 +78,28 @@ class StatsViewController: UIViewController, UITableViewDataSource{
         setupLevelRing()
         setupRewardButton()
         setupTableView()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        viewModel.loadStatsData()
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion:{ [weak self] completion in
+                switch completion {
+                case .finished:
+                    self?.bindViewModel()
+                    print("Данные загружены.")
+                case .failure(let error):
+                    print("Ошибка загрузки данных: \(error)")
+                    self?.bindViewModel()
+                }
+            }, receiveValue: { [weak self] _ in
+                self?.updateLevelRing()
+            }).store(in: &cancellables)
         
-        
-       
+        setupLevelRing()
+        setupRewardButton()
+        setupTableView()
     }
 
     

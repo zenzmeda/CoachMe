@@ -368,6 +368,7 @@ extension WorkoutsViewController: UITableViewDelegate, UITableViewDataSource {
         for trainer in trainers {
             let action = UIAlertAction(title: trainer.userName, style: .default) { _ in
                 self.viewModel.sendWorkoutsForConfirmation(user: self.viewModel.getUser(), trainer: trainer)
+                self.viewModel.mockAddWorkoutsConfirmation(user: self.viewModel.getUser(), workouts: self.viewModel.getCurrentWorckout())
                 self.viewModel.mockConfirmation()
             }
             alert.addAction(action)

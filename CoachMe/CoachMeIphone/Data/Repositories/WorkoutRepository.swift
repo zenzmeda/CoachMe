@@ -57,4 +57,8 @@ class WorkoutsRepository: WorkoutsRepositoryProtocol {
     func getStatusUserGYM(user: UserModel) -> AnyPublisher<UserModel.UserStatus, RegisterError> {
         return apiService.getUserStatusGYM(user: user)
     }
+    
+    func mockAddWorkoutsConfirmation (user: UserModel, workouts: [Stats]) -> AnyPublisher<[Stats], RegisterError>{
+        return apiService.mockAddConfirmationfWorkouts(user: user, workouts: workouts)
+    }
 }

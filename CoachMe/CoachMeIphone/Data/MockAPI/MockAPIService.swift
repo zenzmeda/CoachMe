@@ -176,6 +176,23 @@ class MockAPIService: APIServiceProtocol{
             }}.eraseToAnyPublisher()
     }
     
+    func mockAddConfirmationfWorkouts(user: UserModel, workouts: [Stats]) -> AnyPublisher<[Stats], RegisterError>{
+        return Future {promise in
+            if let existingUser = self.users.first(where: {$0.id == user.id}){
+                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                    existingUser.progress.append(contentsOf: workouts)
+                    print("Проведена имитация добавления тренировок пользователю \(workouts)")
+                    promise(.success(workouts))
+                }
+            }else {
+                DispatchQueue.main.asyncAfter(deadline: .now()+1){
+                    print("Ошибка имитации добавления тренировкок (отсутствует пользователь с данным id")
+                    promise(.failure(RegisterError.userAbsentError))
+                }
+            }}.eraseToAnyPublisher()
+    }
+    
+    
     func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>{
         return Future { promise in
             DispatchQueue.main.asyncAfter(deadline: .now()+1){

@@ -13,4 +13,5 @@ protocol WorkoutsRepositoryProtocol{
     func getTrainer() -> AnyPublisher<[TrainerModel], RegisterError>
     func mockConfirmation(user: UserModel)->AnyPublisher<Void,RegisterError>
     func getStatusUserGYM(user: UserModel)->AnyPublisher<UserModel.UserStatus,RegisterError>
+    func mockAddWorkoutsConfirmation (user: UserModel, workouts: [Stats]) -> AnyPublisher<[Stats], RegisterError>
 }

@@ -131,4 +131,14 @@ class WorkoutsViewModel {
             self?.UserInGym = value
         }).store(in: &cancellables)
     }
+    
+    func mockAddWorkoutsConfirmation (user: UserModel, workouts: [Stats]){
+        repository.mockAddWorkoutsConfirmation(user: user, workouts: workouts).sink(receiveCompletion: {completion in
+            switch completion{
+            case .finished: ()
+            case .failure(let error):
+                print("Ошибка имитациия добавления тернировок во вьюмодел")
+            }}, receiveValue: {value in
+                print ("Имитация добавления тренировок во вьюмодел завершена \(value)")}).store(in: &cancellables)
+    }
 }
