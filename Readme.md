@@ -19,5 +19,25 @@ CoachMe — приложение для геймификации трениро�
 - **GCD** — для многозадачности.
 - **MVVM** — архитектурный подход, разделяющий модель, представление и логику приложения.
 
+На данный момент запросы поступают в моковый API-сервис с имитацией задержки.  
+Он соответствует протоколам реального API, поэтому вы можете спокойно заменить его на рабочий.  
 
 
+<details>
+  <summary>Скриншоты приложения</summary>
+  
+<img src="https://github.com/user-attachments/assets/726961fb-fc4d-405b-ac8a-0b83f4aceaa8" width="400">
+<img src="https://github.com/user-attachments/assets/646be778-2f9b-4d05-9e17-c765ba365c97" width="400">
+  <img src="https://github.com/user-attachments/assets/adbbbf5d-0647-44de-896d-366b1c4145cf" width="400">
+  <img src="https://github.com/user-attachments/assets/fbd3e686-93ce-4cfd-8001-b715539a83e8" width="400">
+  <img src="https://github.com/user-attachments/assets/ed80e414-24ea-4e91-a868-e25b988ff2fb" width="400">
+  <img src="https://github.com/user-attachments/assets/872e1b87-a82a-4a72-9bd4-9ddb94b45ff6" width="400">
+  <img src="https://github.com/user-attachments/assets/b4e5587a-1a83-49a0-b0a2-ed48d56e57df" width="400">
+  <img src="https://github.com/user-attachments/assets/2b4d8421-9a43-4c81-b1d2-83702959c61d" width="400">
+  <img src="https://github.com/user-attachments/assets/f0b8eea6-fb23-4643-b694-0b1b4f069436" width="400">
+  <img src="https://github.com/user-attachments/assets/d284257f-55ae-40c5-8d99-9d5aedc3b7e1" width="400">
+  <img src="https://github.com/user-attachments/assets/c584220f-d2c9-438d-a1ca-7629071db808" width="400">
+
+</details>
+
+>>>>>>> d005e88627bd82631fbcf62ddcb0d481076a09a2
